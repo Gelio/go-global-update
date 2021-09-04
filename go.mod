@@ -1,3 +1,3 @@
-module github.com/Gelio/go-global-update
+module go-global-update
 
 go 1.16
