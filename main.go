@@ -8,26 +8,23 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+
+	gocli "github.com/Gelio/go-global-update/internal/gocli"
 )
 
-func get_executable_binaries_path() (string, error) {
-	cmd := exec.Command("go", "env", "GOBIN")
-	gobin_bytes, err := cmd.Output()
+func getExecutableBinariesPath(cli *gocli.GoCLI) (string, error) {
+	gobin, err := cli.GetEnvVar("GOBIN")
 	if err != nil {
 		return "", nil
 	}
-	gobin := strings.TrimSpace(string(gobin_bytes))
-
 	if len(gobin) > 0 {
 		return gobin, nil
 	}
 
-	cmd = exec.Command("go", "env", "GOPATH")
-	gopath_bytes, err := cmd.Output()
+	gopath, err := cli.GetEnvVar("GOPATH")
 	if err != nil {
 		return "", nil
 	}
-	gopath := strings.TrimSpace(string(gopath_bytes))
 	if len(gopath) == 0 {
 		return "", errors.New("GOPATH and GOPATH are not defined in 'go env' command")
 	}
@@ -38,7 +35,8 @@ func get_executable_binaries_path() (string, error) {
 }
 
 func main() {
-	gobin, err := get_executable_binaries_path()
+	cli := gocli.New(&gocli.RealGoCmdRunner{})
+	gobin, err := getExecutableBinariesPath(&cli)
 	if err != nil {
 		fmt.Println("Error while trying to determine the executable binaries path", err)
 		os.Exit(1)
