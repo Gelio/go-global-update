@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 type mockResponse struct {
@@ -66,7 +67,7 @@ shfmt: go1.17
 		},
 	}
 
-	binariesFinder := NewIntrospecter(&cmdRunner, gobin)
+	binariesFinder := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
 
 	binary, err := binariesFinder.Introspect("shfmt")
 	assert.Nil(t, err)
@@ -104,7 +105,7 @@ func TestExtractValidModuleURLFromGofumpt(t *testing.T) {
 		},
 	}
 
-	binariesFinder := NewIntrospecter(&cmdRunner, gobin)
+	binariesFinder := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
 
 	binary, err := binariesFinder.Introspect("gofumpt")
 	assert.Nil(t, err)
@@ -125,7 +126,7 @@ func TestMissingModuleURL(t *testing.T) {
 shfmt: go1.17
 `}},
 	}
-	binariesFinder := NewIntrospecter(&cmdRunner, gobin)
+	binariesFinder := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
 
 	_, err := binariesFinder.Introspect("shfmt")
 	assert.NotNil(t, err)
@@ -155,7 +156,7 @@ func TestExtractLatestVersion(t *testing.T) {
 		},
 	}
 
-	binariesFinder := NewIntrospecter(&cmdRunner, gobin)
+	binariesFinder := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
 	binary, err := binariesFinder.Introspect("gofumpt")
 	assert.Nil(t, err)
 	assert.Equal(t, binary, GoBinary{
