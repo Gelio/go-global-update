@@ -1,6 +1,9 @@
 package goclitest
 
-import "fmt"
+import (
+	"fmt"
+	"path"
+)
 
 type MockResponse struct {
 	Args   []string
@@ -18,20 +21,31 @@ func (r *TestGoCmdRunner) RunGoCommand(args ...string) (string, error) {
 			continue
 		}
 
+		match := true
 		for i, arg := range args {
 			if arg != v.Args[i] {
-				continue
+				match = false
+				break
 			}
 		}
-
-		return v.Output, v.Error
+		if match {
+			return v.Output, v.Error
+		}
 	}
 
 	return "", fmt.Errorf("could not match args: %v", args)
 }
 
-type testDirectoryLister struct{ entries []string }
+func GetLatestVersionMockResponse(pathURL, version string) MockResponse {
+	return MockResponse{
+		Args:   []string{"list", "-m", "-f", "{{.Version}}", fmt.Sprintf("%s@latest", pathURL)},
+		Output: version,
+	}
+}
 
-func (l *testDirectoryLister) ListDirectoryEntries(path string) ([]string, error) {
-	return l.entries, nil
+func GetModuleInfoMockResponse(gobin, binaryName, output string) MockResponse {
+	return MockResponse{
+		Args:   []string{"version", "-m", path.Join(gobin, binaryName)},
+		Output: output,
+	}
 }

@@ -20,8 +20,6 @@ type Options struct {
 	BinariesToUpdate []string
 }
 
-// TODO: add tests for the updater
-
 // UpdateBinaries updates binaries in GOBIN
 //
 // If binariesToUpdate is empty, the command will attempt to update all
@@ -56,7 +54,6 @@ func UpdateBinaries(
 	printBinariesSummary(introspectionResults, out, options.Verbose)
 
 	if !options.DryRun {
-		fmt.Fprintln(out)
 		return updateBinaries(introspectionResults, &goCLI, out, options.Verbose)
 	}
 
@@ -111,14 +108,23 @@ func updateBinaries(
 	verbose bool,
 ) error {
 	var upgradeErrors []error
+	var binariesToUpdate []gobinaries.GoBinary
 
 	for _, result := range introspectionResults {
 		if result.Error != nil || !result.Binary.UpgradePossible() {
 			continue
 		}
 
-		binary := result.Binary
+		binariesToUpdate = append(binariesToUpdate, result.Binary)
+	}
 
+	if len(binariesToUpdate) == 0 {
+		return nil
+	}
+
+	fmt.Fprintln(out)
+
+	for _, binary := range binariesToUpdate {
 		fmt.Fprintf(out, "Upgrading %s to %s ... ", binary.Name, binary.LatestVersion)
 		upgradeOutput, err := goCLI.UpgradePackage(binary.PathURL)
 		if err != nil {
