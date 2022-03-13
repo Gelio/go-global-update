@@ -11,10 +11,15 @@ import (
 )
 
 type GoBinary struct {
-	ModuleURL string
-	Name      string
-	AbsPath   string
-	Version   string
+	ModuleURL     string
+	Name          string
+	AbsPath       string
+	Version       string
+	LatestVersion string
+}
+
+func (b *GoBinary) UpgradePossible() bool {
+	return b.Version != b.LatestVersion
 }
 
 type GoBinariesFinder interface {
@@ -46,14 +51,20 @@ func (f *RealGoBinariesFinder) FindGoBinaries(gobin string) ([]GoBinary, error) 
 
 		moduleInfo, err := f.getModuleInfo(absPath)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not get module info about %v: %w", absPath, err)
+		}
+
+		latestVersion, err := f.getLatestModuleVersion(moduleInfo.moduleURL)
+		if err != nil {
+			return nil, fmt.Errorf("could not get latest version of %v: %w", moduleInfo.moduleURL, err)
 		}
 
 		goBinaries = append(goBinaries, GoBinary{
-			ModuleURL: moduleInfo.moduleURL,
-			Version:   moduleInfo.version,
-			Name:      binaryName,
-			AbsPath:   absPath,
+			ModuleURL:     moduleInfo.moduleURL,
+			Version:       moduleInfo.version,
+			Name:          binaryName,
+			AbsPath:       absPath,
+			LatestVersion: latestVersion,
 		})
 	}
 
@@ -76,6 +87,11 @@ func (f *RealGoBinariesFinder) getModuleInfo(binaryPath string) (*parsedGoModule
 	}
 
 	return goModuleInfo, nil
+}
+
+func (f *RealGoBinariesFinder) getLatestModuleVersion(moduleURL string) (string, error) {
+	latestVersionModule := fmt.Sprintf("%s@latest", moduleURL)
+	return f.cmdRunner.RunGoCommand("list", "-m", "-f", "{{.Version}}", latestVersionModule)
 }
 
 func findModuleURLInModuleOutput(output string) *parsedGoModuleInfo {
