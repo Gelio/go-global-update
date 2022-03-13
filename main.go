@@ -3,11 +3,14 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path"
 
 	"github.com/Gelio/go-global-update/internal/gobinaries"
-	gocli "github.com/Gelio/go-global-update/internal/gocli"
+	"github.com/Gelio/go-global-update/internal/gocli"
+
+	"github.com/urfave/cli/v2"
 )
 
 func getExecutableBinariesPath(cli *gocli.GoCLI) (string, error) {
@@ -33,6 +36,21 @@ func getExecutableBinariesPath(cli *gocli.GoCLI) (string, error) {
 }
 
 func main() {
+	app := &cli.App{
+		Name:    "go-global-update",
+		Usage:   "Update globally installed go binaries",
+		Version: "v0.1.0",
+		Action: func(c *cli.Context) error {
+			updateBinaries()
+			return nil
+		},
+	}
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func updateBinaries() {
 	goCmdRunner := gocli.RealGoCmdRunner{}
 	cli := gocli.New(&goCmdRunner)
 	gobin, err := getExecutableBinariesPath(&cli)
