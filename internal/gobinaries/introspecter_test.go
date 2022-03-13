@@ -1,55 +1,20 @@
 package gobinaries
 
 import (
-	"errors"
-	"fmt"
 	"testing"
 
+	"github.com/Gelio/go-global-update/internal/goclitest"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
-type mockResponse struct {
-	args   []string
-	output string
-	error  error
-}
-
-type testGoCmdRunner struct {
-	responses []mockResponse
-}
-
-func (r *testGoCmdRunner) RunGoCommand(args ...string) (string, error) {
-	for _, v := range r.responses {
-		if len(args) != len(v.args) {
-			continue
-		}
-
-		for i, arg := range args {
-			if arg != v.args[i] {
-				continue
-			}
-		}
-
-		return v.output, v.error
-	}
-
-	return "", errors.New(fmt.Sprintf("could not match args: %v", args))
-}
-
-type testDirectoryLister struct{ entries []string }
-
-func (l *testDirectoryLister) ListDirectoryEntries(path string) ([]string, error) {
-	return l.entries, nil
-}
-
 func TestExtractValidModuleURL(t *testing.T) {
 	gobin := "~/go/bin"
-	cmdRunner := testGoCmdRunner{
-		responses: []mockResponse{
+	cmdRunner := goclitest.TestGoCmdRunner{
+		Responses: []goclitest.MockResponse{
 			{
-				args: []string{"version", "-m", "~/go/bin/shfmt"},
-				output: `
+				Args: []string{"version", "-m", "~/go/bin/shfmt"},
+				Output: `
 shfmt: go1.17
         path    mvdan.cc/sh/v3/cmd/shfmt
         mod     mvdan.cc/sh/v3  v3.4.2  h1:d3TKODXfZ1bjWU/StENN+GDg5xOzNu5+C8AEu405E5U=
@@ -61,8 +26,8 @@ shfmt: go1.17
 `,
 			},
 			{
-				args:   []string{"list", "-m", "-f", "{{.Version}}", "mvdan.cc/sh/v3/cmd/shfmt@latest"},
-				output: "v3.4.2",
+				Args:   []string{"list", "-m", "-f", "{{.Version}}", "mvdan.cc/sh/v3/cmd/shfmt@latest"},
+				Output: "v3.4.2",
 			},
 		},
 	}
@@ -83,11 +48,11 @@ shfmt: go1.17
 
 func TestExtractValidModuleURLFromGofumpt(t *testing.T) {
 	gobin := "~/go/bin"
-	cmdRunner := testGoCmdRunner{
-		responses: []mockResponse{
+	cmdRunner := goclitest.TestGoCmdRunner{
+		Responses: []goclitest.MockResponse{
 			{
-				args: []string{"version", "-m", "~/go/bin/gofumpt"},
-				output: `
+				Args: []string{"version", "-m", "~/go/bin/gofumpt"},
+				Output: `
     bin/gofumpt: go1.17
         path    mvdan.cc/gofumpt
         mod     mvdan.cc/gofumpt        v0.3.0  h1:kTojdZo9AcEYbQYhGuLf/zszYthRdhDNDUi2JKTxas4=
@@ -99,8 +64,8 @@ func TestExtractValidModuleURLFromGofumpt(t *testing.T) {
 `,
 			},
 			{
-				args:   []string{"list", "-m", "-f", "{{.Version}}", "mvdan.cc/gofumpt@latest"},
-				output: "v0.3.0",
+				Args:   []string{"list", "-m", "-f", "{{.Version}}", "mvdan.cc/gofumpt@latest"},
+				Output: "v0.3.0",
 			},
 		},
 	}
@@ -121,8 +86,8 @@ func TestExtractValidModuleURLFromGofumpt(t *testing.T) {
 
 func TestMissingModuleURL(t *testing.T) {
 	gobin := "~/go/bin"
-	cmdRunner := testGoCmdRunner{
-		responses: []mockResponse{{args: []string{"version", "-m", "~/go/bin/shfmt"}, output: `
+	cmdRunner := goclitest.TestGoCmdRunner{
+		Responses: []goclitest.MockResponse{{Args: []string{"version", "-m", "~/go/bin/shfmt"}, Output: `
 shfmt: go1.17
 `}},
 	}
@@ -134,11 +99,11 @@ shfmt: go1.17
 
 func TestExtractLatestVersion(t *testing.T) {
 	gobin := "~/go/bin"
-	cmdRunner := testGoCmdRunner{
-		responses: []mockResponse{
+	cmdRunner := goclitest.TestGoCmdRunner{
+		Responses: []goclitest.MockResponse{
 			{
-				args: []string{"version", "-m", "~/go/bin/gofumpt"},
-				output: `
+				Args: []string{"version", "-m", "~/go/bin/gofumpt"},
+				Output: `
     bin/gofumpt: go1.17
         path    mvdan.cc/gofumpt
         mod     mvdan.cc/gofumpt        v0.3.0  h1:kTojdZo9AcEYbQYhGuLf/zszYthRdhDNDUi2JKTxas4=
@@ -150,8 +115,8 @@ func TestExtractLatestVersion(t *testing.T) {
 `,
 			},
 			{
-				args:   []string{"list", "-m", "-f", "{{.Version}}", "mvdan.cc/gofumpt@latest"},
-				output: "v0.4.0",
+				Args:   []string{"list", "-m", "-f", "{{.Version}}", "mvdan.cc/gofumpt@latest"},
+				Output: "v0.4.0",
 			},
 		},
 	}
