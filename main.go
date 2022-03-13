@@ -54,8 +54,7 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			updateBinaries(logger)
-			return nil
+			return updateBinaries(logger)
 		},
 		Before: func(c *cli.Context) error {
 			updateLoggerLevel(&loggerConfig, c)
@@ -77,10 +76,10 @@ func updateLoggerLevel(loggerConfig *zap.Config, c *cli.Context) {
 	loggerConfig.Level.SetLevel(logLevel)
 }
 
-func updateBinaries(logger *zap.Logger) {
+func updateBinaries(logger *zap.Logger) error {
 	goCmdRunner := gocli.NewCmdRunner(logger)
-	cli := gocli.New(&goCmdRunner)
-	gobin, err := getExecutableBinariesPath(&cli)
+	goCLI := gocli.New(&goCmdRunner)
+	gobin, err := getExecutableBinariesPath(&goCLI)
 	if err != nil {
 		fmt.Println("Error while trying to determine the executable binaries path", err)
 		os.Exit(1)
@@ -102,7 +101,7 @@ func updateBinaries(logger *zap.Logger) {
 
 	for _, goBinary := range goBinaries {
 		fmt.Printf("%s (current version %s) ... ", goBinary.Name, goBinary.Version)
-		upgradeOutput, err := cli.UpgradePackage(goBinary.ModuleURL)
+		upgradeOutput, err := goCLI.UpgradePackage(binary.PathURL)
 		if err != nil {
 			upgradeErrors = append(upgradeErrors, err)
 			fmt.Println("❌")
@@ -118,6 +117,8 @@ func updateBinaries(logger *zap.Logger) {
 	}
 
 	if len(upgradeErrors) > 0 {
-		os.Exit(1)
+		return cli.Exit("Some packages failed to upgrade", 1)
 	}
+
+	return nil
 }
