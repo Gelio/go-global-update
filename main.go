@@ -9,6 +9,7 @@ import (
 
 	"github.com/Gelio/go-global-update/internal/gobinaries"
 	"github.com/Gelio/go-global-update/internal/gocli"
+	"go.uber.org/zap"
 
 	"github.com/urfave/cli/v2"
 )
@@ -36,22 +37,45 @@ func getExecutableBinariesPath(cli *gocli.GoCLI) (string, error) {
 }
 
 func main() {
+	loggerConfig := zap.NewDevelopmentConfig()
+	logger, err := loggerConfig.Build()
+	if err != nil {
+		log.Fatalf("cannot initialize zap logger: %v", err)
+	}
+	defer logger.Sync()
+
 	app := &cli.App{
 		Name:    "go-global-update",
 		Usage:   "Update globally installed go binaries",
 		Version: "v0.1.0",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name: "verbose",
+			},
+		},
 		Action: func(c *cli.Context) error {
-			updateBinaries()
+			updateLoggerLevel(&loggerConfig, c)
+			updateBinaries(logger)
 			return nil
 		},
 	}
+
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not run command: %v", err)
 	}
 }
 
-func updateBinaries() {
-	goCmdRunner := gocli.RealGoCmdRunner{}
+func updateLoggerLevel(loggerConfig *zap.Config, c *cli.Context) {
+	logLevel := zap.InfoLevel
+	if c.Bool("verbose") {
+		logLevel = zap.DebugLevel
+	}
+
+	loggerConfig.Level.SetLevel(logLevel)
+}
+
+func updateBinaries(logger *zap.Logger) {
+	goCmdRunner := gocli.NewCmdRunner(logger)
 	cli := gocli.New(&goCmdRunner)
 	gobin, err := getExecutableBinariesPath(&cli)
 	if err != nil {
