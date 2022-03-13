@@ -50,7 +50,8 @@ func main() {
 		Version: "v0.1.0",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name: "verbose",
+				Name:  "debug",
+				Usage: "Display debug information",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -69,7 +70,7 @@ func main() {
 
 func updateLoggerLevel(loggerConfig *zap.Config, c *cli.Context) {
 	logLevel := zap.InfoLevel
-	if c.Bool("verbose") {
+	if c.Bool("debug") {
 		logLevel = zap.DebugLevel
 	}
 
