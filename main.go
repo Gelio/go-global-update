@@ -139,11 +139,7 @@ func updateBinaries(logger *zap.Logger, options options) error {
 		}
 	}
 
-	introspectionResults, err := gobinaries.IntrospectBinaries(&introspecter, binaryNames)
-	if err != nil {
-		fmt.Println("Error while trying to find go binaries to update", err)
-		os.Exit(1)
-	}
+	introspectionResults := gobinaries.IntrospectBinaries(&introspecter, binaryNames)
 
 	var upgradeErrors []error
 

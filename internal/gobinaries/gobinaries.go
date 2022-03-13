@@ -7,7 +7,7 @@ type IntrospectionResult struct {
 	Error  error
 }
 
-func IntrospectBinaries(introspecter *Introspecter, binaryNames []string) ([]IntrospectionResult, error) {
+func IntrospectBinaries(introspecter *Introspecter, binaryNames []string) []IntrospectionResult {
 	var results []IntrospectionResult
 
 	for _, binaryName := range binaryNames {
@@ -22,5 +22,5 @@ func IntrospectBinaries(introspecter *Introspecter, binaryNames []string) ([]Int
 		})
 	}
 
-	return results, nil
+	return results
 }
