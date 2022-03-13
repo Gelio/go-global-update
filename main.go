@@ -53,9 +53,13 @@ func main() {
 				Name:  "debug",
 				Usage: "Display debug information",
 			},
+			&cli.BoolFlag{
+				Name:  "dry-run",
+				Usage: "Check which binaries are upgradable without actually installing new versions",
+			},
 		},
 		Action: func(c *cli.Context) error {
-			return updateBinaries(logger)
+			return updateBinaries(logger, c.Bool("dry-run"))
 		},
 		Before: func(c *cli.Context) error {
 			updateLoggerLevel(&loggerConfig, c)
@@ -77,7 +81,7 @@ func updateLoggerLevel(loggerConfig *zap.Config, c *cli.Context) {
 	loggerConfig.Level.SetLevel(logLevel)
 }
 
-func updateBinaries(logger *zap.Logger) error {
+func updateBinaries(logger *zap.Logger, dryRun bool) error {
 	goCmdRunner := gocli.NewCmdRunner(logger)
 	goCLI := gocli.New(&goCmdRunner)
 	gobin, err := getExecutableBinariesPath(&goCLI)
@@ -111,6 +115,11 @@ func updateBinaries(logger *zap.Logger) error {
 		binary := result.Binary
 		if !binary.UpgradePossible() {
 			fmt.Printf("%s (current version %s, latest)\n", binary.Name, binary.Version)
+			continue
+		}
+
+		if dryRun {
+			fmt.Printf("%s (current version %s, would upgrade to %s)\n", binary.Name, binary.Version, binary.LatestVersion)
 			continue
 		}
 
