@@ -90,8 +90,10 @@ func updateBinaries(logger *zap.Logger) error {
 		os.Exit(1)
 	}
 
-	goBinariesFinder := gobinaries.NewFinder(&goCmdRunner, &gobinaries.FilesystemDirectoryLister{})
-	goBinaries, err := goBinariesFinder.FindGoBinaries(gobin)
+	introspecter := gobinaries.NewIntrospecter(&goCmdRunner, gobin)
+
+	goBinariesFinder := gobinaries.NewFinder(introspecter, &gobinaries.FilesystemDirectoryLister{})
+	introspectionResults, err := goBinariesFinder.FindGoBinaries(gobin)
 	if err != nil {
 		fmt.Println("Error while trying to find go binaries to update", err)
 		os.Exit(1)
@@ -99,8 +101,19 @@ func updateBinaries(logger *zap.Logger) error {
 
 	var upgradeErrors []error
 
-	for _, goBinary := range goBinaries {
-		fmt.Printf("%s (current version %s) ... ", goBinary.Name, goBinary.Version)
+	for _, result := range introspectionResults {
+		if result.Error != nil {
+			fmt.Println(result.Error)
+			continue
+		}
+
+		binary := result.Binary
+		if !binary.UpgradePossible() {
+			fmt.Printf("%s (current version %s, latest)\n", binary.Name, binary.Version)
+			continue
+		}
+
+		fmt.Printf("%s (current version %s, upgrading to %s) ... ", binary.Name, binary.Version, binary.LatestVersion)
 		upgradeOutput, err := goCLI.UpgradePackage(binary.PathURL)
 		if err != nil {
 			upgradeErrors = append(upgradeErrors, err)

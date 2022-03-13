@@ -66,22 +66,18 @@ shfmt: go1.17
 		},
 	}
 
-	binariesFinder := RealGoBinariesFinder{
-		cmdRunner: &cmdRunner,
-		directoryLister: &testDirectoryLister{
-			entries: []string{"shfmt"},
-		},
-	}
+	binariesFinder := NewIntrospecter(&cmdRunner, gobin)
 
-	binaries, err := binariesFinder.FindGoBinaries(gobin)
+	binary, err := binariesFinder.Introspect("shfmt")
 	assert.Nil(t, err)
-	assert.Equal(t, binaries, []GoBinary{{
+	assert.Equal(t, binary, GoBinary{
 		Name:          "shfmt",
-		ModuleURL:     "mvdan.cc/sh/v3/cmd/shfmt",
-		AbsPath:       "~/go/bin/shfmt",
+		PathURL:       "mvdan.cc/sh/v3/cmd/shfmt",
+		ModuleURL:     "mvdan.cc/sh/v3",
+		Path:          "~/go/bin/shfmt",
 		Version:       "v3.4.2",
 		LatestVersion: "v3.4.2",
-	}})
+	})
 }
 
 func TestExtractValidModuleURLFromGofumpt(t *testing.T) {
@@ -108,22 +104,18 @@ func TestExtractValidModuleURLFromGofumpt(t *testing.T) {
 		},
 	}
 
-	binariesFinder := RealGoBinariesFinder{
-		cmdRunner: &cmdRunner,
-		directoryLister: &testDirectoryLister{
-			entries: []string{"gofumpt"},
-		},
-	}
+	binariesFinder := NewIntrospecter(&cmdRunner, gobin)
 
-	binaries, err := binariesFinder.FindGoBinaries(gobin)
+	binary, err := binariesFinder.Introspect("gofumpt")
 	assert.Nil(t, err)
-	assert.Equal(t, binaries, []GoBinary{{
+	assert.Equal(t, binary, GoBinary{
 		Name:          "gofumpt",
 		ModuleURL:     "mvdan.cc/gofumpt",
-		AbsPath:       "~/go/bin/gofumpt",
+		PathURL:       "mvdan.cc/gofumpt",
+		Path:          "~/go/bin/gofumpt",
 		Version:       "v0.3.0",
 		LatestVersion: "v0.3.0",
-	}})
+	})
 }
 
 func TestMissingModuleURL(t *testing.T) {
@@ -133,14 +125,9 @@ func TestMissingModuleURL(t *testing.T) {
 shfmt: go1.17
 `}},
 	}
-	binariesFinder := RealGoBinariesFinder{
-		cmdRunner: &cmdRunner,
-		directoryLister: &testDirectoryLister{
-			entries: []string{"shfmt"},
-		},
-	}
+	binariesFinder := NewIntrospecter(&cmdRunner, gobin)
 
-	_, err := binariesFinder.FindGoBinaries(gobin)
+	_, err := binariesFinder.Introspect("shfmt")
 	assert.NotNil(t, err)
 }
 
@@ -168,22 +155,16 @@ func TestExtractLatestVersion(t *testing.T) {
 		},
 	}
 
-	binariesFinder := RealGoBinariesFinder{
-		cmdRunner: &cmdRunner,
-		directoryLister: &testDirectoryLister{
-			entries: []string{"gofumpt"},
-		},
-	}
-
-	binaries, err := binariesFinder.FindGoBinaries(gobin)
+	binariesFinder := NewIntrospecter(&cmdRunner, gobin)
+	binary, err := binariesFinder.Introspect("gofumpt")
 	assert.Nil(t, err)
-	assert.Equal(t, binaries, []GoBinary{{
+	assert.Equal(t, binary, GoBinary{
 		Name:          "gofumpt",
 		ModuleURL:     "mvdan.cc/gofumpt",
-		AbsPath:       "~/go/bin/gofumpt",
+		PathURL:       "mvdan.cc/gofumpt",
+		Path:          "~/go/bin/gofumpt",
 		Version:       "v0.3.0",
 		LatestVersion: "v0.4.0",
-	}})
-	binary := binaries[0]
+	})
 	assert.True(t, binary.UpgradePossible())
 }
