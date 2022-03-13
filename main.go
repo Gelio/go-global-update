@@ -72,12 +72,13 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			binariesToUpdate := c.Args().Slice()
 			return updateBinaries(
 				logger,
-				c.Bool("dry-run"),
-				c.Bool("verbose"),
-				binariesToUpdate,
+				options{
+					DryRun:           c.Bool("dry-run"),
+					Verbose:          c.Bool("verbose"),
+					BinariesToUpdate: c.Args().Slice(),
+				},
 			)
 		},
 		Before: func(c *cli.Context) error {
@@ -100,11 +101,18 @@ func updateLoggerLevel(loggerConfig *zap.Config, c *cli.Context) {
 	loggerConfig.Level.SetLevel(logLevel)
 }
 
+type options struct {
+	Debug            bool
+	Verbose          bool
+	DryRun           bool
+	BinariesToUpdate []string
+}
+
 // updateBinaries updates binaries in GOBIN
 //
 // If binariesToUpdate is empty, the command will attempt to update all
 // found binaries in GOBIN.
-func updateBinaries(logger *zap.Logger, dryRun, verbose bool, binariesToUpdate []string) error {
+func updateBinaries(logger *zap.Logger, options options) error {
 	goCmdRunner := gocli.NewCmdRunner(logger)
 	goCLI := gocli.New(&goCmdRunner)
 	gobin, err := getExecutableBinariesPath(&goCLI)
@@ -121,16 +129,17 @@ func updateBinaries(logger *zap.Logger, dryRun, verbose bool, binariesToUpdate [
 	}
 
 	introspecter := gobinaries.NewIntrospecter(&goCmdRunner, gobin, logger)
-	if len(binariesToUpdate) == 0 {
+	binaryNames := options.BinariesToUpdate
+	if len(binaryNames) == 0 {
 		lister := gobinaries.FilesystemDirectoryLister{}
-		binariesToUpdate, err = lister.ListDirectoryEntries(gobin)
+		binaryNames, err = lister.ListDirectoryEntries(gobin)
 		if err != nil {
 			fmt.Printf("Error while trying to list GOBIN (%s) entries: %v", gobin, err)
 			os.Exit(1)
 		}
 	}
 
-	introspectionResults, err := gobinaries.IntrospectBinaries(&introspecter, binariesToUpdate)
+	introspectionResults, err := gobinaries.IntrospectBinaries(&introspecter, binaryNames)
 	if err != nil {
 		fmt.Println("Error while trying to find go binaries to update", err)
 		os.Exit(1)
@@ -150,7 +159,7 @@ func updateBinaries(logger *zap.Logger, dryRun, verbose bool, binariesToUpdate [
 			continue
 		}
 
-		if dryRun {
+		if options.DryRun {
 			fmt.Printf("%s (current version %s, would upgrade to %s)\n", binary.Name, binary.Version, binary.LatestVersion)
 			continue
 		}
@@ -165,7 +174,7 @@ func updateBinaries(logger *zap.Logger, dryRun, verbose bool, binariesToUpdate [
 			fmt.Println("✅")
 		}
 
-		if len(upgradeOutput) > 0 && (verbose || err != nil) {
+		if len(upgradeOutput) > 0 && (options.Verbose || err != nil) {
 			fmt.Println(upgradeOutput)
 		}
 		fmt.Println()
