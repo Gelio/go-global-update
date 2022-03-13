@@ -1,40 +1,16 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"log"
 	"os"
-	"path"
 
 	"github.com/Gelio/go-global-update/internal/gobinaries"
 	"github.com/Gelio/go-global-update/internal/gocli"
+	"github.com/Gelio/go-global-update/internal/updater"
 	"go.uber.org/zap"
 
 	"github.com/urfave/cli/v2"
 )
-
-func getExecutableBinariesPath(cli *gocli.GoCLI) (string, error) {
-	gobin, err := cli.GetEnvVar("GOBIN")
-	if err != nil {
-		return "", nil
-	}
-	if len(gobin) > 0 {
-		return gobin, nil
-	}
-
-	gopath, err := cli.GetEnvVar("GOPATH")
-	if err != nil {
-		return "", nil
-	}
-	if len(gopath) == 0 {
-		return "", errors.New("GOPATH and GOPATH are not defined in 'go env' command")
-	}
-
-	gobin = path.Join(gopath, "bin")
-
-	return gobin, nil
-}
 
 func main() {
 	loggerConfig := zap.NewDevelopmentConfig()
@@ -72,15 +48,22 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			return updateBinaries(
+			cmdRunner := gocli.NewCmdRunner(logger)
+
+			err := updater.UpdateBinaries(
 				logger,
-				options{
+				updater.Options{
 					Debug:            c.Bool("debug"),
 					DryRun:           c.Bool("dry-run"),
 					Verbose:          c.Bool("verbose"),
 					BinariesToUpdate: c.Args().Slice(),
 				},
+				os.Stdout,
+				&cmdRunner,
+				&gobinaries.FilesystemDirectoryLister{},
+				&updater.Filesystem{},
 			)
+			return err
 		},
 		Before: func(c *cli.Context) error {
 			updateLoggerLevel(&loggerConfig, c)
@@ -100,86 +83,4 @@ func updateLoggerLevel(loggerConfig *zap.Config, c *cli.Context) {
 	}
 
 	loggerConfig.Level.SetLevel(logLevel)
-}
-
-type options struct {
-	Debug            bool
-	Verbose          bool
-	DryRun           bool
-	BinariesToUpdate []string
-}
-
-// updateBinaries updates binaries in GOBIN
-//
-// If binariesToUpdate is empty, the command will attempt to update all
-// found binaries in GOBIN.
-func updateBinaries(logger *zap.Logger, options options) error {
-	goCmdRunner := gocli.NewCmdRunner(logger)
-	goCLI := gocli.New(&goCmdRunner)
-	gobin, err := getExecutableBinariesPath(&goCLI)
-	if err != nil {
-		fmt.Println("Error while trying to determine the GOBIN path", err)
-		os.Exit(1)
-	}
-
-	logger.Debug("found GOBIN path", zap.String("GOBIN", gobin))
-
-	if err := os.Chdir(gobin); err != nil {
-		fmt.Println("Error when changing directory to GOBIN", err)
-		os.Exit(1)
-	}
-
-	introspecter := gobinaries.NewIntrospecter(&goCmdRunner, gobin, logger)
-	binaryNames := options.BinariesToUpdate
-	if len(binaryNames) == 0 {
-		lister := gobinaries.FilesystemDirectoryLister{}
-		binaryNames, err = lister.ListDirectoryEntries(gobin)
-		if err != nil {
-			fmt.Printf("Error while trying to list GOBIN (%s) entries: %v", gobin, err)
-			os.Exit(1)
-		}
-	}
-
-	introspectionResults := gobinaries.IntrospectBinaries(&introspecter, binaryNames)
-
-	var upgradeErrors []error
-
-	for _, result := range introspectionResults {
-		if result.Error != nil {
-			fmt.Println(result.Error)
-			continue
-		}
-
-		binary := result.Binary
-		if !binary.UpgradePossible() {
-			fmt.Printf("%s (current version %s, latest)\n", binary.Name, binary.Version)
-			continue
-		}
-
-		if options.DryRun {
-			fmt.Printf("%s (current version %s, would upgrade to %s)\n", binary.Name, binary.Version, binary.LatestVersion)
-			continue
-		}
-
-		fmt.Printf("%s (current version %s, upgrading to %s) ... ", binary.Name, binary.Version, binary.LatestVersion)
-		upgradeOutput, err := goCLI.UpgradePackage(binary.PathURL)
-		if err != nil {
-			upgradeErrors = append(upgradeErrors, err)
-			fmt.Println("❌")
-			fmt.Println("\tCould not upgrade package")
-		} else {
-			fmt.Println("✅")
-		}
-
-		if len(upgradeOutput) > 0 && (options.Verbose || err != nil) {
-			fmt.Println(upgradeOutput)
-		}
-		fmt.Println()
-	}
-
-	if len(upgradeErrors) > 0 {
-		return cli.Exit("Some packages failed to upgrade", 1)
-	}
-
-	return nil
 }
