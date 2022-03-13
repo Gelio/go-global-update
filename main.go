@@ -91,7 +91,7 @@ func updateBinaries(logger *zap.Logger) error {
 		os.Exit(1)
 	}
 
-	introspecter := gobinaries.NewIntrospecter(&goCmdRunner, gobin)
+	introspecter := gobinaries.NewIntrospecter(&goCmdRunner, gobin, logger)
 
 	goBinariesFinder := gobinaries.NewFinder(introspecter, &gobinaries.FilesystemDirectoryLister{})
 	introspectionResults, err := goBinariesFinder.FindGoBinaries(gobin)

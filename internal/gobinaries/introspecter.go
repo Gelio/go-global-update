@@ -7,17 +7,20 @@ import (
 	"strings"
 
 	"github.com/Gelio/go-global-update/internal/gocli"
+	"go.uber.org/zap"
 )
 
 type GoBinaryIntrospecter struct {
 	cmdRunner gocli.GoCmdRunner
 	gobin     string
+	logger    *zap.Logger
 }
 
-func NewIntrospecter(cmdRunner gocli.GoCmdRunner, gobin string) GoBinaryIntrospecter {
+func NewIntrospecter(cmdRunner gocli.GoCmdRunner, gobin string, logger *zap.Logger) GoBinaryIntrospecter {
 	return GoBinaryIntrospecter{
 		cmdRunner,
 		gobin,
+		logger,
 	}
 }
 
@@ -41,6 +44,7 @@ func (i *GoBinaryIntrospecter) Introspect(binaryName string) (GoBinary, error) {
 		Path:          binaryPath,
 		LatestVersion: latestVersion,
 	}
+	i.logger.Sugar().Debugf("introspected binary %s: %+v", binaryName, goBinary)
 
 	return goBinary, nil
 }
