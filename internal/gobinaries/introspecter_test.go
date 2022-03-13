@@ -67,9 +67,9 @@ shfmt: go1.17
 		},
 	}
 
-	binariesFinder := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
+	introspecter := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
 
-	binary, err := binariesFinder.Introspect("shfmt")
+	binary, err := introspecter.Introspect("shfmt")
 	assert.Nil(t, err)
 	assert.Equal(t, binary, GoBinary{
 		Name:          "shfmt",
@@ -105,9 +105,9 @@ func TestExtractValidModuleURLFromGofumpt(t *testing.T) {
 		},
 	}
 
-	binariesFinder := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
+	introspecter := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
 
-	binary, err := binariesFinder.Introspect("gofumpt")
+	binary, err := introspecter.Introspect("gofumpt")
 	assert.Nil(t, err)
 	assert.Equal(t, binary, GoBinary{
 		Name:          "gofumpt",
@@ -126,9 +126,9 @@ func TestMissingModuleURL(t *testing.T) {
 shfmt: go1.17
 `}},
 	}
-	binariesFinder := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
+	introspecter := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
 
-	_, err := binariesFinder.Introspect("shfmt")
+	_, err := introspecter.Introspect("shfmt")
 	assert.NotNil(t, err)
 }
 
@@ -156,8 +156,8 @@ func TestExtractLatestVersion(t *testing.T) {
 		},
 	}
 
-	binariesFinder := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
-	binary, err := binariesFinder.Introspect("gofumpt")
+	introspecter := NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
+	binary, err := introspecter.Introspect("gofumpt")
 	assert.Nil(t, err)
 	assert.Equal(t, binary, GoBinary{
 		Name:          "gofumpt",

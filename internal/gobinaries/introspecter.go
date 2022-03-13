@@ -10,21 +10,21 @@ import (
 	"go.uber.org/zap"
 )
 
-type GoBinaryIntrospecter struct {
+type Introspecter struct {
 	cmdRunner gocli.GoCmdRunner
 	gobin     string
 	logger    *zap.Logger
 }
 
-func NewIntrospecter(cmdRunner gocli.GoCmdRunner, gobin string, logger *zap.Logger) GoBinaryIntrospecter {
-	return GoBinaryIntrospecter{
+func NewIntrospecter(cmdRunner gocli.GoCmdRunner, gobin string, logger *zap.Logger) Introspecter {
+	return Introspecter{
 		cmdRunner,
 		gobin,
 		logger,
 	}
 }
 
-func (i *GoBinaryIntrospecter) Introspect(binaryName string) (GoBinary, error) {
+func (i *Introspecter) Introspect(binaryName string) (GoBinary, error) {
 	binaryPath := path.Join(i.gobin, binaryName)
 	moduleInfo, err := i.getModuleInfo(binaryPath)
 	if err != nil {
@@ -55,7 +55,7 @@ type parsedGoModuleInfo struct {
 	version   string
 }
 
-func (i *GoBinaryIntrospecter) getModuleInfo(binaryPath string) (*parsedGoModuleInfo, error) {
+func (i *Introspecter) getModuleInfo(binaryPath string) (*parsedGoModuleInfo, error) {
 	moduleOutput, err := i.cmdRunner.RunGoCommand("version", "-m", binaryPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve version information about binary %s: %w\n%v", binaryPath, err, moduleOutput)
@@ -68,7 +68,7 @@ func (i *GoBinaryIntrospecter) getModuleInfo(binaryPath string) (*parsedGoModule
 	return goModuleInfo, nil
 }
 
-func (i *GoBinaryIntrospecter) getLatestModuleVersion(moduleURL string) (string, error) {
+func (i *Introspecter) getLatestModuleVersion(moduleURL string) (string, error) {
 	latestVersionModule := fmt.Sprintf("%s@latest", moduleURL)
 	return i.cmdRunner.RunGoCommand("list", "-m", "-f", "{{.Version}}", latestVersionModule)
 }
