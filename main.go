@@ -54,8 +54,11 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			updateLoggerLevel(&loggerConfig, c)
 			updateBinaries(logger)
+			return nil
+		},
+		Before: func(c *cli.Context) error {
+			updateLoggerLevel(&loggerConfig, c)
 			return nil
 		},
 	}
