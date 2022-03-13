@@ -58,7 +58,7 @@ type parsedGoModuleInfo struct {
 func (i *GoBinaryIntrospecter) getModuleInfo(binaryPath string) (*parsedGoModuleInfo, error) {
 	moduleOutput, err := i.cmdRunner.RunGoCommand("version", "-m", binaryPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve version information about binary %s: %w", binaryPath, err)
+		return nil, fmt.Errorf("could not retrieve version information about binary %s: %w\n%v", binaryPath, err, moduleOutput)
 	}
 	goModuleInfo := findModuleURLInModuleOutput(moduleOutput)
 	if goModuleInfo == nil {
