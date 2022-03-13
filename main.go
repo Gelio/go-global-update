@@ -57,9 +57,13 @@ func main() {
 				Name:  "dry-run",
 				Usage: "Check which binaries are upgradable without actually installing new versions",
 			},
+			&cli.BoolFlag{
+				Name:  "verbose",
+				Usage: "Include more detailed information in the logs",
+			},
 		},
 		Action: func(c *cli.Context) error {
-			return updateBinaries(logger, c.Bool("dry-run"))
+			return updateBinaries(logger, c.Bool("dry-run"), c.Bool("verbose"))
 		},
 		Before: func(c *cli.Context) error {
 			updateLoggerLevel(&loggerConfig, c)
@@ -81,7 +85,7 @@ func updateLoggerLevel(loggerConfig *zap.Config, c *cli.Context) {
 	loggerConfig.Level.SetLevel(logLevel)
 }
 
-func updateBinaries(logger *zap.Logger, dryRun bool) error {
+func updateBinaries(logger *zap.Logger, dryRun, verbose bool) error {
 	goCmdRunner := gocli.NewCmdRunner(logger)
 	goCLI := gocli.New(&goCmdRunner)
 	gobin, err := getExecutableBinariesPath(&goCLI)
@@ -133,7 +137,7 @@ func updateBinaries(logger *zap.Logger, dryRun bool) error {
 			fmt.Println("✅")
 		}
 
-		if len(upgradeOutput) > 0 {
+		if len(upgradeOutput) > 0 && (verbose || err != nil) {
 			fmt.Println(upgradeOutput)
 		}
 		fmt.Println()
