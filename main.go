@@ -3,12 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"os/exec"
-	"regexp"
-	"strings"
+	"path"
 
+	"github.com/Gelio/go-global-update/internal/gobinaries"
 	gocli "github.com/Gelio/go-global-update/internal/gocli"
 )
 
@@ -29,13 +27,14 @@ func getExecutableBinariesPath(cli *gocli.GoCLI) (string, error) {
 		return "", errors.New("GOPATH and GOPATH are not defined in 'go env' command")
 	}
 
-	gobin = fmt.Sprintf("%s/%s", gopath, "bin")
+	gobin = path.Join(gopath, "bin")
 
 	return gobin, nil
 }
 
 func main() {
-	cli := gocli.New(&gocli.RealGoCmdRunner{})
+	goCmdRunner := gocli.RealGoCmdRunner{}
+	cli := gocli.New(&goCmdRunner)
 	gobin, err := getExecutableBinariesPath(&cli)
 	if err != nil {
 		fmt.Println("Error while trying to determine the executable binaries path", err)
@@ -44,53 +43,36 @@ func main() {
 
 	if err := os.Chdir(gobin); err != nil {
 		fmt.Println("Error when changing directory to GOBIN", err)
-		os.Exit(2)
+		os.Exit(1)
 	}
 
-	fileinfos, err := ioutil.ReadDir(".")
+	goBinariesFinder := gobinaries.NewFinder(&goCmdRunner, &gobinaries.FilesystemDirectoryLister{})
+	goBinaries, err := goBinariesFinder.FindGoBinaries(gobin)
 	if err != nil {
-		fmt.Println("Error when reading the GOBIN directory", err)
-		os.Exit(3)
+		fmt.Println("Error while trying to find go binaries to update", err)
+		os.Exit(1)
 	}
 
-	for _, fileinfo := range fileinfos {
-		binaryName := fileinfo.Name()
-		fmt.Println("Upgrading package", binaryName)
-		cmd := exec.Command("go", "version", "-m", binaryName)
-		stdout, err := cmd.Output()
+	var upgradeErrors []error
+
+	for _, goBinary := range goBinaries {
+		fmt.Printf("%s (current version %s) ... ", goBinary.Name, goBinary.Version)
+		upgradeOutput, err := cli.UpgradePackage(goBinary.ModuleURL)
 		if err != nil {
-			fmt.Println("Error when reading version information for package", binaryName, err)
-			os.Exit(4)
+			upgradeErrors = append(upgradeErrors, err)
+			fmt.Println("❌")
+			fmt.Println("\tCould not upgrade package")
+		} else {
+			fmt.Println("✅")
 		}
-		stdoutString := string(stdout)
 
-		lines := strings.Split(stdoutString, "\n")
-		matched := false
-
-		for _, l := range lines {
-			r := regexp.MustCompile(`\bpath\s+(.*)$`)
-			matches := r.FindStringSubmatch(l)
-			if len(matches) == 0 {
-				continue
-			}
-			matched = true
-
-			binaryPath := matches[1]
-			cmd = exec.Command("go", "install", fmt.Sprintf("%s@latest", binaryPath))
-			stdout, err = cmd.CombinedOutput()
-
-			if err != nil {
-				fmt.Println("Error when updating package", binaryPath, ", path", binaryPath)
-				os.Exit(6)
-			}
-			fmt.Println("Upgraded package", binaryName)
-			fmt.Println(string(stdout))
+		if len(upgradeOutput) > 0 {
+			fmt.Println(upgradeOutput)
 		}
-		if !matched {
-			fmt.Println("Output for package", binaryName, "does not contain a \"path\" section")
-			os.Exit(5)
-		}
+		fmt.Println()
 	}
 
-	fmt.Println("All packages updated successfully")
+	if len(upgradeErrors) > 0 {
+		os.Exit(1)
+	}
 }
