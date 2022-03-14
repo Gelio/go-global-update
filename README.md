@@ -18,9 +18,14 @@ go install github.com/Gelio/go-global-update@latest
 
 ## Usage
 
+Running
+
 ```sh
 go-global-update
 ```
+
+will print information about currently installed global binaries and attempt to
+upgrade those that have newer versions.
 
 You can also do a dry run without update the binaries:
 
