@@ -61,3 +61,7 @@ go-global-update --help
 
 1. If the binary has a newer version, run `go install [package path]@latest` to
    update it.
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
