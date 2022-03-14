@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -57,6 +59,17 @@ func getVersion(t *testing.T, gobin, binaryName string) (string, error) {
 	return string(version), err
 }
 
+func binaryName(baseName string) string {
+	// NOTE: inspired by https://github.com/markbates/refresh/pull/4/files
+	if runtime.GOOS == "windows" {
+		if !strings.HasSuffix(baseName, ".exe") {
+			return baseName + ".exe"
+		}
+	}
+
+	return baseName
+}
+
 func TestIntegration(t *testing.T) {
 	type binaryToInstall struct {
 		name           string
@@ -101,7 +114,7 @@ func TestIntegration(t *testing.T) {
 		},
 		{
 			name:       "single package when multiple packages installed",
-			updateArgs: []string{"gofumpt"},
+			updateArgs: []string{binaryName("gofumpt")},
 			binariesToInstall: []binaryToInstall{
 				gofumptBinaryToInstall,
 				{
