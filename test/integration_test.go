@@ -105,15 +105,15 @@ func TestIntegration(t *testing.T) {
 		updateArgs        []string
 	}{
 		{
-			name:              "single package",
+			name:              "single binary",
 			binariesToInstall: []binaryToInstall{gofumptBinaryToInstall},
 		},
 		{
-			name:              "multiple packages",
+			name:              "multiple binary",
 			binariesToInstall: []binaryToInstall{gofumptBinaryToInstall, shfmtBinaryToInstall},
 		},
 		{
-			name:       "single package when multiple packages installed",
+			name:       "single binary when multiple binaries installed",
 			updateArgs: []string{binaryName("gofumpt")},
 			binariesToInstall: []binaryToInstall{
 				gofumptBinaryToInstall,
