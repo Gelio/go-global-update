@@ -16,6 +16,13 @@ import (
 
 const INTEGRATION_TESTS_DIR string = "integration-tests"
 
+// NOTE: the working directory in the tests is the directory of the current
+// test file.
+// main.go is in the parent directory.
+var mainGoBinaryPath string = filepath.Join("..", "main.go")
+
+// prepareTempoGobin returns an absolute path to a temporary directory. It
+// could serve as GOBIN for a test.
 func prepareTempGobin(t *testing.T) string {
 	gobin, err := ioutil.TempDir(INTEGRATION_TESTS_DIR, "test-")
 	require.Nil(t, err)
@@ -40,11 +47,7 @@ func newTestCommand(t *testing.T, gobin, name string, args ...string) *exec.Cmd 
 }
 
 func newGoGlobalUpdateCommand(t *testing.T, gobin string, args ...string) *exec.Cmd {
-	// NOTE: the working directory in the tests is the directory of the current
-	// test file.
-	// main.go is in the parent directory.
-	mainGoBinary := filepath.Join("..", "main.go")
-	args = append([]string{"run", mainGoBinary}, args...)
+	args = append([]string{"run", mainGoBinaryPath}, args...)
 	return newTestCommand(t, gobin, "go", args...)
 }
 
@@ -68,6 +71,10 @@ func binaryName(baseName string) string {
 	}
 
 	return baseName
+}
+
+func ensureIntegrationTestsDirExists(t *testing.T) {
+	require.Nil(t, os.MkdirAll(INTEGRATION_TESTS_DIR, os.ModePerm))
 }
 
 func TestIntegration(t *testing.T) {
@@ -148,8 +155,7 @@ func TestIntegration(t *testing.T) {
 		},
 	}
 
-	os.RemoveAll(INTEGRATION_TESTS_DIR)
-	require.Nil(t, os.MkdirAll(INTEGRATION_TESTS_DIR, os.ModePerm))
+	ensureIntegrationTestsDirExists(t)
 
 	for _, c := range cases {
 		c := c
@@ -179,4 +185,56 @@ func TestIntegration(t *testing.T) {
 			os.RemoveAll(gobin)
 		})
 	}
+}
+
+func TestBuiltFromSourceCommandLineArguments(t *testing.T) {
+	ensureIntegrationTestsDirExists(t)
+
+	// Verify handling of binaries built using `go build -o path main.go`
+	// See https://github.com/Gelio/go-global-update/issues/3#issuecomment-1072178664
+
+	gobin := prepareTempGobin(t)
+	defer os.RemoveAll(gobin)
+
+	builtBinaryName := binaryName("built-binary")
+	err := newTestCommand(t, gobin, "go", "build", "-o", filepath.Join(gobin, builtBinaryName), mainGoBinaryPath).Run()
+	require.Nil(t, err)
+
+	output, err := newGoGlobalUpdateCommand(t, gobin, builtBinaryName).Output()
+	assert.Nil(t, err)
+	assert.Contains(t, string(output), fmt.Sprintf("%s (version: (devel), can upgrade to v0.1.0)", builtBinaryName))
+	assert.Contains(t, string(output), "binary was built from source")
+
+	version, err := newTestCommand(t, gobin, "go", "version", "-m", filepath.Join(gobin, builtBinaryName)).Output()
+	assert.Nil(t, err)
+	assert.Contains(t, string(version), "(devel)", "Binary was upgraded but binaries built from source should be skipped")
+}
+
+func TestInstalledFromSource(t *testing.T) {
+	ensureIntegrationTestsDirExists(t)
+
+	// Verify handling of binaries installed using `go install` in a local repository
+	// See https://github.com/Gelio/go-global-update/issues/3#issuecomment-1071221182
+
+	gobin := prepareTempGobin(t)
+	defer os.RemoveAll(gobin)
+
+	repositoryDir, err := filepath.Abs("..")
+	require.Nil(t, err)
+
+	installCommand := newTestCommand(t, gobin, "go", "install")
+	installCommand.Dir = repositoryDir
+
+	err = installCommand.Run()
+	require.Nil(t, err)
+
+	builtBinaryName := binaryName("go-global-update")
+	output, err := newGoGlobalUpdateCommand(t, gobin, builtBinaryName).Output()
+	assert.Nil(t, err)
+	assert.Contains(t, string(output), fmt.Sprintf("%s (version: (devel), can upgrade to v0.1.0)", builtBinaryName))
+	assert.Contains(t, string(output), "binary was installed from source")
+
+	version, err := newTestCommand(t, gobin, "go", "version", "-m", filepath.Join(gobin, builtBinaryName)).Output()
+	assert.Nil(t, err)
+	assert.Contains(t, string(version), "(devel)", "Binary was upgraded but binaries built from source should be skipped")
 }
