@@ -110,8 +110,22 @@ func updateBinaries(
 	var upgradeErrors []error
 	var binariesToUpdate []gobinaries.GoBinary
 
+	fmt.Fprintln(out)
+
 	for _, result := range introspectionResults {
 		if result.Error != nil || !result.Binary.UpgradePossible() {
+			continue
+		}
+
+		if binary := result.Binary; binary.BuiltFromSource() {
+			fmt.Fprintf(out, "Skipping upgrading %s\n    ", binary.Name)
+			if binary.BuiltWithGoBuild() {
+				fmt.Fprintln(out, `The binary was built from source (probably using "go build") and the binary path is unknown.`)
+			} else {
+				fmt.Fprintln(out, `The binary was installed from source (probably using "go install" in the cloned repository).`)
+			}
+			fmt.Fprintln(out, "    Install the binary using \"go install repositoryPath@latest\" instead.")
+			fmt.Fprintln(out)
 			continue
 		}
 
@@ -122,15 +136,13 @@ func updateBinaries(
 		return nil
 	}
 
-	fmt.Fprintln(out)
-
 	for _, binary := range binariesToUpdate {
 		fmt.Fprintf(out, "Upgrading %s to %s ... ", binary.Name, binary.LatestVersion)
 		upgradeOutput, err := goCLI.UpgradePackage(binary.PathURL)
 		if err != nil {
 			upgradeErrors = append(upgradeErrors, err)
 			fmt.Fprintln(out, "❌")
-			fmt.Fprintln(out, "\tCould not upgrade package")
+			fmt.Fprintln(out, "    Could not upgrade package")
 		} else {
 			fmt.Fprintln(out, "✅")
 		}
