@@ -4,8 +4,8 @@
 
 ### Added
 
-- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) containing a description of
-  common problems faced while updating packages with `go-global-update`.
+- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) containing a description of common
+  problems faced while updating packages with `go-global-update`.
 
 ## v0.1.2 (2022-03-21)
 
@@ -16,10 +16,11 @@ A patch release adding support for go 1.18.
 - Support go 1.18 <https://github.com/Gelio/go-global-update/pull/7>
 
   Go 1.18 changed the format of the `go version -m [binary-name]` command to no
-  longer include the `mod` information for binaries built from source using `go build main.go`.
+  longer include the `mod` information for binaries built from source using
+  `go build main.go`.
 
-  go-global-update now parses such outputs and does not attempt to check for
-  the latest version of such binaries.
+  go-global-update now parses such outputs and does not attempt to check for the
+  latest version of such binaries.
 
 ## v0.1.1 (2022-03-21)
 
@@ -30,8 +31,8 @@ A patch release containing fixes for some of the edge cases found in
 
 - Skip updating binaries built from source.
 
-  Binaries built from source (either using `go build main.go` or `go install`
-  in the cloned repository) likely have been modified prior to being built.
+  Binaries built from source (either using `go build main.go` or `go install` in
+  the cloned repository) likely have been modified prior to being built.
   Updating them would likely throw away these changes and end up being annoying
   for engineers who want to keep their modified versions.
 

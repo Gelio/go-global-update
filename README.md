@@ -4,7 +4,8 @@
 
 Update globally installed go binaries.
 
-The missing go command similar to `npm -g update` or [cargo install-update](https://github.com/nabijaczleweli/cargo-update).
+The missing go command similar to `npm -g update` or
+[cargo install-update](https://github.com/nabijaczleweli/cargo-update).
 
 <!-- toc -->
 
@@ -59,7 +60,8 @@ go-global-update --help
 
 ## Upgrading `go-global-update`
 
-`go-global-update` will take care of updating itself when it updates other binaries.
+`go-global-update` will take care of updating itself when it updates other
+binaries.
 
 ## Troubleshooting
 
@@ -86,4 +88,5 @@ look at [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for more information.
 
 ## Contributing
 
-Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
+Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for more
+information.

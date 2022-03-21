@@ -16,16 +16,17 @@ globally-installed binaries using go-global-update.
 
 go-global-update can only update binaries in `GOBIN` installed using
 `go install [path URL]@latest`. go-global-update cannot update binaries which
-were built from source (inside of the source repository of the binary) using either:
+were built from source (inside of the source repository of the binary) using
+either:
 
 - `go install` (without arguments)
 - `go build` (either without arguments or pointing to a specific Go file)
 
-This is because the version of the installed binary is discarded and will
-appear as `(devel)` in `go version -m [binary-name]`. Moreover, for binaries
-built using `go build`, the path URL is also discarded and replaced with
-`command-line-arguments`, which makes it impossible to know what is the path
-URL for the binary. The path URL is required when updating the binary.
+This is because the version of the installed binary is discarded and will appear
+as `(devel)` in `go version -m [binary-name]`. Moreover, for binaries built
+using `go build`, the path URL is also discarded and replaced with
+`command-line-arguments`, which makes it impossible to know what is the path URL
+for the binary. The path URL is required when updating the binary.
 
 ```sh
 $ git clone git@github.com:StevenACoffman/toolbox.git
@@ -78,7 +79,8 @@ Next runs of `go-global-update` will correctly keep `cobra-cli` up-to-date.
 Known extracted binaries:
 
 - [`cobra`](https://github.com/spf13/cobra) was extracted to
-  [`cobra-cli`](https://github.com/spf13/cobra-cli) in [v1.3.0](https://github.com/spf13/cobra-cli/releases/tag/v1.3.0)
+  [`cobra-cli`](https://github.com/spf13/cobra-cli) in
+  [v1.3.0](https://github.com/spf13/cobra-cli/releases/tag/v1.3.0)
 
 ## E003 - module declares its path as ... but was required as ...
 
@@ -95,11 +97,10 @@ go install: github.com/googleapis/gnostic@latest: github.com/googleapis/gnostic@
           but was required as: github.com/googleapis/gnostic
 ```
 
-This happens because GitHub automatically redirects [the old
-URL](https://github.com/googleapis/gnostic) to [the new URL of the
-repository](https://github.com/google/gnostic), but [the `go.mod` only lists the
-new path to the
-repository](https://github.com/google/gnostic/blob/418d86c152e3f607fa625e9aca135091e574811f/go.mod#L1),
+This happens because GitHub automatically redirects
+[the old URL](https://github.com/googleapis/gnostic) to
+[the new URL of the repository](https://github.com/google/gnostic), but
+[the `go.mod` only lists the new path to the repository](https://github.com/google/gnostic/blob/418d86c152e3f607fa625e9aca135091e574811f/go.mod#L1),
 which `go` does not like.
 
 To mitigate the problem, remove the old binary and install it once using the new
@@ -121,10 +122,10 @@ Known moved repositories:
 
 ## E004 - go.mod contains `replace` directives
 
-Some binaries contain `go.mod` files which contain [`replace`
-directives](https://go.dev/ref/mod#go-mod-file-replace). `go install` does not
-handle such directives and exits with an error when trying to install or update
-such a binary.
+Some binaries contain `go.mod` files which contain
+[`replace` directives](https://go.dev/ref/mod#go-mod-file-replace). `go install`
+does not handle such directives and exits with an error when trying to install
+or update such a binary.
 
 ```sh
 $ go-global-update
@@ -139,7 +140,8 @@ go install: github.com/wagoodman/dive@latest (in github.com/wagoodman/dive@v0.10
 
 There are 2 ways to solve this problem:
 
-1. Ask the module maintainer to remove the `replace` directive. This way `go install` will be able to correctly install it.
+1. Ask the module maintainer to remove the `replace` directive. This way
+   `go install` will be able to correctly install it.
 
 2. Clone the repository locally and run `go install` on it.
 
