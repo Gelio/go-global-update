@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## v0.1.1 (2022-03-21)
+
+A patch release containing fixes for some of the edge cases found in
+<https://github.com/Gelio/go-global-update/issues/3>.
+
 ### Fixed
 
 - Skip updating binaries built from source.
