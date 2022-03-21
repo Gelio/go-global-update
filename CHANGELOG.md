@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) containing a description of
+  common problems faced while updating packages with `go-global-update`.
+
 ## v0.1.2 (2022-03-21)
 
 A patch release adding support for go 1.18.

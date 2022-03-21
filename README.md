@@ -6,6 +6,18 @@ Update globally installed go binaries.
 
 The missing go command similar to `npm -g update` or [cargo install-update](https://github.com/nabijaczleweli/cargo-update).
 
+<!-- vim-markdown-toc GFM -->
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Upgrading `go-global-update`](#upgrading-go-global-update)
+- [Troubleshooting](#troubleshooting)
+- [How it works](#how-it-works)
+- [Contributing](#contributing)
+
+<!-- vim-markdown-toc -->
+
 ## Requirements
 
 - Go 1.16 or higher
@@ -48,6 +60,11 @@ go-global-update --help
 ## Upgrading `go-global-update`
 
 `go-global-update` will take care of updating itself when it updates other binaries.
+
+## Troubleshooting
+
+Do you have problems updating some binaries using `go-global-update`? Take a
+look at [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for more information.
 
 ## How it works
 
