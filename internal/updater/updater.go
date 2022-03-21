@@ -129,7 +129,7 @@ func updateBinaries(
 				fmt.Fprintln(out, `The binary was installed from source (probably using "go install" in the cloned repository).`)
 			}
 			fmt.Fprintln(out, "    Install the binary using \"go install repositoryPath@latest\" instead.")
-			fmt.Fprintln(out)
+			fmt.Fprintf(out, "%s\n\n", binaryBuiltFromSourceProblem.String())
 			continue
 		}
 
@@ -153,6 +153,10 @@ func updateBinaries(
 
 		if len(upgradeOutput) > 0 && (verbose || err != nil) {
 			fmt.Fprintln(out, upgradeOutput)
+
+			for _, problem := range FindCommonUpdateProblems(upgradeOutput) {
+				fmt.Fprintf(out, "%s\n", problem.String())
+			}
 		}
 		fmt.Fprintln(out)
 	}

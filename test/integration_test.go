@@ -238,3 +238,52 @@ func TestInstalledFromSource(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Contains(t, string(version), "(devel)", "Binary was upgraded but binaries built from source should be skipped")
 }
+
+// TestDetectCommonProblems checks that common problems are detected and
+// reported.
+func TestDetectCommonProblems(t *testing.T) {
+	ensureIntegrationTestsDirExists(t)
+
+	cases := []struct {
+		name                string
+		installCommand      func(t *testing.T, gobin string) *exec.Cmd
+		binaryName          string
+		expectedProblemCode string
+	}{
+		{
+			// NOTE: this seems like the only "stable" error that will keep
+			// happening in the future.
+			//
+			// E003 repository being moved would require installing the
+			// package before the repository was moved first, which means
+			// going back in time or mocking the results of `go install`,
+			// which is not intended in integration tests.
+			//
+			// E004 go.mod containing `replace` directives can be changed in the
+			// latest version so tests will fail.
+			name: "cobra moved to cobra-cli",
+			installCommand: func(t *testing.T, gobin string) *exec.Cmd {
+				return newTestCommand(t, gobin, "go", "install", "github.com/spf13/cobra/cobra@v1.3.0")
+			},
+			binaryName:          "cobra",
+			expectedProblemCode: "E002",
+		},
+	}
+
+	for _, c := range cases {
+		c := c
+		t.Run(c.name, func(t *testing.T) {
+			gobin := prepareTempGobin(t)
+			defer os.RemoveAll(gobin)
+
+			err := c.installCommand(t, gobin).Run()
+			require.Nil(t, err)
+
+			builtBinaryName := binaryName(c.binaryName)
+			output, err := newGoGlobalUpdateCommand(t, gobin, builtBinaryName).Output()
+
+			assert.NotNil(t, err, "expected the update to fail due to a common update problem")
+			assert.Contains(t, string(output), c.expectedProblemCode, "problem code not found")
+		})
+	}
+}
