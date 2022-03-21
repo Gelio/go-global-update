@@ -86,10 +86,14 @@ func printBinariesSummary(
 
 		binary := result.Binary
 		var latestVersionInfo string
-		if binary.UpgradePossible() {
-			latestVersionInfo = fmt.Sprintf("can upgrade to %s", binary.LatestVersion)
+		if binary.LatestVersion != "" {
+			if binary.UpgradePossible() {
+				latestVersionInfo = fmt.Sprintf("can upgrade to %s", binary.LatestVersion)
+			} else {
+				latestVersionInfo = "up-to-date"
+			}
 		} else {
-			latestVersionInfo = "up-to-date"
+			latestVersionInfo = "cannot upgrade"
 		}
 
 		name := binary.Name

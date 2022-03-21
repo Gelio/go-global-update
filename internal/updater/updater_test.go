@@ -130,7 +130,7 @@ installed-from-source: go1.17
 	err := UpdateBinaries(logger, options, &output, &cmdRunner, &lister, fsutils)
 
 	assert.Nil(t, err)
-	assert.Equal(t, `built-from-source (version: (devel), can upgrade to v0.1.0)
+	assert.Equal(t, `built-from-source (version: (devel), cannot upgrade)
 installed-from-source (version: (devel), can upgrade to v0.1.0)
 
 Skipping upgrading built-from-source

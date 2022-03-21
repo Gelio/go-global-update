@@ -202,7 +202,7 @@ func TestBuiltFromSourceCommandLineArguments(t *testing.T) {
 
 	output, err := newGoGlobalUpdateCommand(t, gobin, builtBinaryName).Output()
 	assert.Nil(t, err)
-	assert.Contains(t, string(output), fmt.Sprintf("%s (version: (devel), can upgrade to v0.1.0)", builtBinaryName))
+	assert.Contains(t, string(output), fmt.Sprintf("%s (version: (devel), cannot upgrade)", builtBinaryName))
 	assert.Contains(t, string(output), "binary was built from source")
 
 	version, err := newTestCommand(t, gobin, "go", "version", "-m", filepath.Join(gobin, builtBinaryName)).Output()
@@ -231,7 +231,7 @@ func TestInstalledFromSource(t *testing.T) {
 	builtBinaryName := binaryName("go-global-update")
 	output, err := newGoGlobalUpdateCommand(t, gobin, builtBinaryName).Output()
 	assert.Nil(t, err)
-	assert.Contains(t, string(output), fmt.Sprintf("%s (version: (devel), can upgrade to v0.1.0)", builtBinaryName))
+	assert.Contains(t, string(output), fmt.Sprintf("%s (version: (devel), can upgrade to v", builtBinaryName))
 	assert.Contains(t, string(output), "binary was installed from source")
 
 	version, err := newTestCommand(t, gobin, "go", "version", "-m", filepath.Join(gobin, builtBinaryName)).Output()

@@ -31,9 +31,15 @@ func (i *Introspecter) Introspect(binaryName string) (GoBinary, error) {
 		return GoBinary{}, fmt.Errorf("could not get module info about %v: %w", binaryPath, err)
 	}
 
-	latestVersion, err := i.getLatestModuleVersion(moduleInfo.moduleURL)
-	if err != nil {
-		return GoBinary{}, fmt.Errorf("could not get latest version of %v: %w", moduleInfo.moduleURL, err)
+	latestVersion := ""
+	// NOTE: module URL may be missing on go 1.18 for binaries built using `go build`
+	// In case the package is built from source (path is
+	// "command-line-arguments"), behave consistently on all go versions
+	if moduleInfo.moduleURL != "" && moduleInfo.pathURL != "command-line-arguments" {
+		latestVersion, err = i.getLatestModuleVersion(moduleInfo.moduleURL)
+		if err != nil {
+			return GoBinary{}, fmt.Errorf("could not get latest version of %v: %w", moduleInfo.moduleURL, err)
+		}
 	}
 
 	goBinary := GoBinary{
@@ -99,8 +105,16 @@ func findModuleURLInModuleOutput(output string) *parsedGoModuleInfo {
 		}
 	}
 
-	if !matchedMod || !matchedPath {
+	if !matchedPath {
 		return nil
+	}
+
+	if !matchedMod {
+		// NOTE: Binaries built from source (using `go build`) do not contain a
+		// `mod` entry on go 1.18.
+		// If that happens, we behave as on older go versions (the version is
+		// "(devel)")
+		goModuleInfo.version = "(devel)"
 	}
 
 	return &goModuleInfo
