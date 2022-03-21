@@ -2,7 +2,7 @@ package gobinaries
 
 import (
 	"fmt"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -25,7 +25,7 @@ func NewIntrospecter(cmdRunner gocli.GoCmdRunner, gobin string, logger *zap.Logg
 }
 
 func (i *Introspecter) Introspect(binaryName string) (GoBinary, error) {
-	binaryPath := path.Join(i.gobin, binaryName)
+	binaryPath := filepath.Join(i.gobin, binaryName)
 	moduleInfo, err := i.getModuleInfo(binaryPath)
 	if err != nil {
 		return GoBinary{}, fmt.Errorf("could not get module info about %v: %w", binaryPath, err)

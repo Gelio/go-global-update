@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Fixed
+
 - Skip updating binaries built from source.
 
   Binaries built from source (either using `go build main.go` or `go install`
@@ -12,6 +14,11 @@
   Moreover, packages built using `go build main.go` have
   `command-line-arguments` set as their `path` in `go version -m binary-name`.
   This makes it impossible to update automatically.
+
+- Filesystem path handling on Windows.
+
+  Use correct separator for filesystem paths on Windows. This allows using this
+  tool on Windows.
 
 ## v0.1.0 (2022-03-14)
 

@@ -1,7 +1,7 @@
 package gobinariestest
 
 import (
-	"path"
+	"path/filepath"
 
 	"github.com/Gelio/go-global-update/internal/gobinaries"
 	"github.com/Gelio/go-global-update/internal/goclitest"
@@ -28,7 +28,7 @@ func GetShfmtMockBinary() MockBinary {
 			Name:          "shfmt",
 			PathURL:       "mvdan.cc/sh/v3/cmd/shfmt",
 			ModuleURL:     "mvdan.cc/sh/v3",
-			Path:          path.Join(GOBIN, "shfmt"),
+			Path:          filepath.Join(GOBIN, "shfmt"),
 			Version:       "v3.4.2",
 			LatestVersion: "v3.4.2",
 		},
@@ -51,7 +51,7 @@ func GetGofumptMockBinary() MockBinary {
 			Name:          "gofumpt",
 			ModuleURL:     "mvdan.cc/gofumpt",
 			PathURL:       "mvdan.cc/gofumpt",
-			Path:          path.Join(GOBIN, "gofumpt"),
+			Path:          filepath.Join(GOBIN, "gofumpt"),
 			Version:       "v0.3.0",
 			LatestVersion: "v0.3.0",
 		},

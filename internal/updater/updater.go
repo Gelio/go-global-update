@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"path"
+	"path/filepath"
 
 	"github.com/Gelio/go-global-update/internal/gobinaries"
 	"github.com/Gelio/go-global-update/internal/gocli"
@@ -177,7 +177,7 @@ func getExecutableBinariesPath(cli *gocli.GoCLI) (string, error) {
 		return "", errors.New("GOPATH and GOPATH are not defined in 'go env' command")
 	}
 
-	gobin = path.Join(gopath, "bin")
+	gobin = filepath.Join(gopath, "bin")
 
 	return gobin, nil
 }
