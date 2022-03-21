@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+## v0.1.2 (2022-03-21)
+
+A patch release adding support for go 1.18.
+
 ### Fixed
 
-- Support go 1.18
+- Support go 1.18 <https://github.com/Gelio/go-global-update/pull/7>
 
   Go 1.18 changed the format of the `go version -m [binary-name]` command to no
   longer include the `mod` information for binaries built from source using `go build main.go`.
