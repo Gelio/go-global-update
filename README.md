@@ -6,7 +6,7 @@ Update globally installed go binaries.
 
 The missing go command similar to `npm -g update` or [cargo install-update](https://github.com/nabijaczleweli/cargo-update).
 
-<!-- vim-markdown-toc GFM -->
+<!-- toc -->
 
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -16,7 +16,7 @@ The missing go command similar to `npm -g update` or [cargo install-update](http
 - [How it works](#how-it-works)
 - [Contributing](#contributing)
 
-<!-- vim-markdown-toc -->
+<!-- tocstop -->
 
 ## Requirements
 

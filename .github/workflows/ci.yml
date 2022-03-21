@@ -38,4 +38,19 @@ jobs:
 
       - run: go build
       - run: go test ./...
-      # TODO: run integration tests
+
+  verify-table-of-contents:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+      - run: npm install
+
+      - run: npm run generate-toc
+      - name: Verify table of contents
+        run: git diff --exit-code
+
+      - name: Check formatting of Markdown documents
+        run: npm run format-docs:check

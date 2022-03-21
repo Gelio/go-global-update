@@ -3,14 +3,14 @@
 This document describes known problems that can occur while trying to update
 globally-installed binaries using go-global-update.
 
-<!-- vim-markdown-toc GFM -->
+<!-- toc -->
 
 - [E001 - binaries built from source](#e001---binaries-built-from-source)
 - [E002 - module found but does not contain package](#e002---module-found-but-does-not-contain-package)
 - [E003 - module declares its path as ... but was required as ...](#e003---module-declares-its-path-as--but-was-required-as-)
 - [E004 - go.mod contains `replace` directives](#e004---gomod-contains-replace-directives)
 
-<!-- vim-markdown-toc -->
+<!-- tocstop -->
 
 ## E001 - binaries built from source
 
