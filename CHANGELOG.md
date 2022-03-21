@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Fixed
+
+- Support go 1.18
+
+  Go 1.18 changed the format of the `go version -m [binary-name]` command to no
+  longer include the `mod` information for binaries built from source using `go build main.go`.
+
+  go-global-update now parses such outputs and does not attempt to check for
+  the latest version of such binaries.
+
 ## v0.1.1 (2022-03-21)
 
 A patch release containing fixes for some of the edge cases found in
