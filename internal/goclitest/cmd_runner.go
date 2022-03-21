@@ -2,7 +2,7 @@ package goclitest
 
 import (
 	"fmt"
-	"path"
+	"path/filepath"
 )
 
 type MockResponse struct {
@@ -45,7 +45,7 @@ func GetLatestVersionMockResponse(pathURL, version string) MockResponse {
 
 func GetModuleInfoMockResponse(gobin, binaryName, output string) MockResponse {
 	return MockResponse{
-		Args:   []string{"version", "-m", path.Join(gobin, binaryName)},
+		Args:   []string{"version", "-m", filepath.Join(gobin, binaryName)},
 		Output: output,
 	}
 }
