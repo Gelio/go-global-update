@@ -136,10 +136,16 @@ installed-from-source (version: (devel), can upgrade to v0.1.0)
 Skipping upgrading built-from-source
     The binary was built from source (probably using "go build") and the binary path is unknown.
     Install the binary using "go install repositoryPath@latest" instead.
+    This seems like a known problem E001.
+    See https://github.com/Gelio/go-global-update/blob/main/TROUBLESHOOTING.md#e001---binaries-built-from-source
+    for more information.
 
 Skipping upgrading installed-from-source
     The binary was installed from source (probably using "go install" in the cloned repository).
     Install the binary using "go install repositoryPath@latest" instead.
+    This seems like a known problem E001.
+    See https://github.com/Gelio/go-global-update/blob/main/TROUBLESHOOTING.md#e001---binaries-built-from-source
+    for more information.
 
 `, output.String())
 }

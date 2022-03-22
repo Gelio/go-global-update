@@ -21,10 +21,13 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Verify formatting
-        # NOTE: only verify formatting on Linux.
+
+        # NOTE: only verify formatting on Linux and the latest go version.
         # It only needs to happen once, and formatting
         # is not consistent on Windows.
-        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        if:
+          ${{ startsWith(matrix.os, 'ubuntu')  && matrix.go-version == '1.18'}}
+
         # NOTE: hacky bash `if` because gofumpt always returns 0 exit code
         # @see https://github.com/mvdan/gofumpt/issues/114
         run: |
@@ -38,4 +41,19 @@ jobs:
 
       - run: go build
       - run: go test ./...
-      # TODO: run integration tests
+
+  verify-table-of-contents:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+      - run: npm install
+
+      - run: npm run generate-toc
+      - name: Verify table of contents
+        run: git diff --exit-code
+
+      - name: Check formatting of Markdown documents
+        run: npm run format-docs:check

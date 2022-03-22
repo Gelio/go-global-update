@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "markdown-toc": "^1.2.0",
+    "prettier": "^2.6.0"
+  },
+  "scripts": {
+    "generate-toc:readme": "markdown-toc -i ./README.md",
+    "generate-toc:troubleshooting": "markdown-toc -i ./TROUBLESHOOTING.md",
+    "generate-toc": "npm run generate-toc:readme && npm run generate-toc:troubleshooting",
+    "format-docs:check": "prettier --check *.md",
+    "format-docs:write": "prettier --write *.md"
+  }
+}
