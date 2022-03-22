@@ -5,7 +5,29 @@
 ### Added
 
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) containing a description of common
-  problems faced while updating packages with `go-global-update`.
+  problems faced while updating binaries with `go-global-update`.
+
+- Include detecting common binary update problems right into `go-global-update`.
+
+  Additional messages will be printed in the output when updating a binary fails
+  due to a known reason.
+
+  ![screenshot](https://user-images.githubusercontent.com/889383/159443820-3c11044b-016d-4df3-8d33-983aa2b251ba.png)
+
+### Maintenance
+
+- Add `npm` scripts to format Markdown documents using
+  [prettier](https://prettier.io/) and generate table of contents using
+  [markdown-toc](https://github.com/jonschlinkert/markdown-toc).
+
+  Those scripts are run CI for more static verification.
+
+- Only verify formatting once in CI (for one matrix build). This is because
+  [gofumpt@v0.3.1](https://github.com/mvdan/gofumpt/tree/v0.3.1) cannot be
+  installed on go 1.16 and it does not make sense to verify formatting multiple
+  times. This also slightly speeds up the CI.
+
+- Add more context in test output if an assertion fails.
 
 ## v0.1.2 (2022-03-21)
 
