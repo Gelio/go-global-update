@@ -57,9 +57,8 @@ func installBinary(t *testing.T, gobin, pathURL string) {
 }
 
 func getVersion(t *testing.T, gobin, binaryName string) (string, error) {
-	// NOTE: assumes that `./binary --version` will return the current version
-	version, err := newTestCommand(t, gobin, filepath.Join(gobin, binaryName), "--version").Output()
-	return string(version), err
+	versionOutput, err := newTestCommand(t, gobin, "go", "version", "-m", filepath.Join(gobin, binaryName)).Output()
+	return string(versionOutput), err
 }
 
 func binaryName(baseName string) string {
@@ -85,14 +84,14 @@ func TestIntegration(t *testing.T) {
 		afterUpdate    func(t *testing.T, version string)
 	}
 
-	gofumptBinaryToInstall := binaryToInstall{
-		name:           "gofumpt",
-		pathAndVersion: "mvdan.cc/gofumpt@v0.2.0",
+	gnosticBinaryToInstall := binaryToInstall{
+		name:           "gnostic",
+		pathAndVersion: "github.com/google/gnostic@v0.6.2",
 		beforeUpdate: func(t *testing.T, version string) {
-			require.Contains(t, version, "v0.2.0")
+			require.Contains(t, version, "v0.6.2")
 		},
 		afterUpdate: func(t *testing.T, version string) {
-			assert.NotContains(t, version, "v0.2.0", "binary was unexpectedly updated")
+			assert.NotContains(t, version, "v0.6.2", "binary was unexpectedly updated")
 		},
 	}
 	shfmtBinaryToInstall := binaryToInstall{
@@ -113,23 +112,23 @@ func TestIntegration(t *testing.T) {
 	}{
 		{
 			name:              "single binary",
-			binariesToInstall: []binaryToInstall{gofumptBinaryToInstall},
+			binariesToInstall: []binaryToInstall{shfmtBinaryToInstall},
 		},
 		{
 			name:              "multiple binaries",
-			binariesToInstall: []binaryToInstall{gofumptBinaryToInstall, shfmtBinaryToInstall},
+			binariesToInstall: []binaryToInstall{gnosticBinaryToInstall, shfmtBinaryToInstall},
 		},
 		{
 			name:       "single binary when multiple binaries installed",
-			updateArgs: []string{binaryName("gofumpt")},
+			updateArgs: []string{binaryName("shfmt")},
 			binariesToInstall: []binaryToInstall{
-				gofumptBinaryToInstall,
+				shfmtBinaryToInstall,
 				{
-					name:           shfmtBinaryToInstall.name,
-					pathAndVersion: shfmtBinaryToInstall.pathAndVersion,
-					beforeUpdate:   shfmtBinaryToInstall.beforeUpdate,
-					// NOTE: the shfmt binary should not be upgraded
-					afterUpdate: shfmtBinaryToInstall.beforeUpdate,
+					name:           gnosticBinaryToInstall.name,
+					pathAndVersion: gnosticBinaryToInstall.pathAndVersion,
+					beforeUpdate:   gnosticBinaryToInstall.beforeUpdate,
+					// NOTE: the gofumpt binary should not be upgraded
+					afterUpdate: gnosticBinaryToInstall.beforeUpdate,
 				},
 			},
 		},
@@ -138,11 +137,11 @@ func TestIntegration(t *testing.T) {
 			updateArgs: []string{"--dry-run"},
 			binariesToInstall: []binaryToInstall{
 				{
-					name:           gofumptBinaryToInstall.name,
-					pathAndVersion: gofumptBinaryToInstall.pathAndVersion,
-					beforeUpdate:   gofumptBinaryToInstall.beforeUpdate,
+					name:           gnosticBinaryToInstall.name,
+					pathAndVersion: gnosticBinaryToInstall.pathAndVersion,
+					beforeUpdate:   gnosticBinaryToInstall.beforeUpdate,
 					// NOTE: the binary should not be upgraded
-					afterUpdate: gofumptBinaryToInstall.beforeUpdate,
+					afterUpdate: gnosticBinaryToInstall.beforeUpdate,
 				},
 				{
 					name:           shfmtBinaryToInstall.name,
@@ -167,8 +166,8 @@ func TestIntegration(t *testing.T) {
 			}
 
 			for _, binary := range c.binariesToInstall {
-				version, err := getVersion(t, gobin, binary.name)
-				require.Nilf(t, err, "could not get version of %s before updating", binary.name)
+				version, err := getVersion(t, gobin, binaryName(binary.name))
+				require.Nilf(t, err, "could not get version of %s before updating\noutput: %s", binaryName(binary.name), string(version))
 				binary.beforeUpdate(t, version)
 			}
 
@@ -176,8 +175,8 @@ func TestIntegration(t *testing.T) {
 			assert.Nilf(t, err, "could not run go-global-update command with args: %v\noutput: %s", c.updateArgs, string(output))
 
 			for _, binary := range c.binariesToInstall {
-				version, err := getVersion(t, gobin, binary.name)
-				require.Nilf(t, err, "could not get version of %s after updating", binary.name)
+				version, err := getVersion(t, gobin, binaryName(binary.name))
+				require.Nilf(t, err, "could not get version of %s after updating\noutput: %s", binaryName(binary.name), string(version))
 				binary.afterUpdate(t, version)
 			}
 
