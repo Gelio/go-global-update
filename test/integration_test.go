@@ -25,10 +25,10 @@ var mainGoBinaryPath string = filepath.Join("..", "main.go")
 // could serve as GOBIN for a test.
 func prepareTempGobin(t *testing.T) string {
 	gobin, err := ioutil.TempDir(INTEGRATION_TESTS_DIR, "test-")
-	require.Nil(t, err)
+	require.Nil(t, err, "could not create a temporary directory for GOBIN")
 
 	gobin, err = filepath.Abs(gobin)
-	require.Nil(t, err)
+	require.Nil(t, err, "could not get the absolute directory of GOBIN")
 
 	return gobin
 }
@@ -52,8 +52,8 @@ func newGoGlobalUpdateCommand(t *testing.T, gobin string, args ...string) *exec.
 }
 
 func installBinary(t *testing.T, gobin, pathURL string) {
-	err := newTestCommand(t, gobin, "go", "install", pathURL).Run()
-	require.Nil(t, err)
+	output, err := newTestCommand(t, gobin, "go", "install", pathURL).CombinedOutput()
+	require.Nilf(t, err, "could not install binary %s in GOBIN %s\noutput: %s", pathURL, gobin, string(output))
 }
 
 func getVersion(t *testing.T, gobin, binaryName string) (string, error) {
@@ -74,7 +74,7 @@ func binaryName(baseName string) string {
 }
 
 func ensureIntegrationTestsDirExists(t *testing.T) {
-	require.Nil(t, os.MkdirAll(INTEGRATION_TESTS_DIR, os.ModePerm))
+	require.Nil(t, os.MkdirAll(INTEGRATION_TESTS_DIR, os.ModePerm), "could not create a directory for integration tests at", INTEGRATION_TESTS_DIR)
 }
 
 func TestIntegration(t *testing.T) {
@@ -92,7 +92,7 @@ func TestIntegration(t *testing.T) {
 			require.Contains(t, version, "v0.2.0")
 		},
 		afterUpdate: func(t *testing.T, version string) {
-			assert.NotContains(t, version, "v0.2.0")
+			assert.NotContains(t, version, "v0.2.0", "binary was unexpectedly updated")
 		},
 	}
 	shfmtBinaryToInstall := binaryToInstall{
@@ -102,7 +102,7 @@ func TestIntegration(t *testing.T) {
 			require.Contains(t, version, "v3.4.2")
 		},
 		afterUpdate: func(t *testing.T, version string) {
-			assert.NotContains(t, version, "v3.4.2")
+			assert.NotContains(t, version, "v3.4.2", "binary was unexpectedly updated")
 		},
 	}
 
@@ -116,7 +116,7 @@ func TestIntegration(t *testing.T) {
 			binariesToInstall: []binaryToInstall{gofumptBinaryToInstall},
 		},
 		{
-			name:              "multiple binary",
+			name:              "multiple binaries",
 			binariesToInstall: []binaryToInstall{gofumptBinaryToInstall, shfmtBinaryToInstall},
 		},
 		{
@@ -168,16 +168,16 @@ func TestIntegration(t *testing.T) {
 
 			for _, binary := range c.binariesToInstall {
 				version, err := getVersion(t, gobin, binary.name)
-				require.Nil(t, err)
+				require.Nilf(t, err, "could not get version of %s before updating", binary.name)
 				binary.beforeUpdate(t, version)
 			}
 
-			err := newGoGlobalUpdateCommand(t, gobin, c.updateArgs...).Run()
-			assert.Nil(t, err)
+			output, err := newGoGlobalUpdateCommand(t, gobin, c.updateArgs...).CombinedOutput()
+			assert.Nilf(t, err, "could not run go-global-update command with args: %v\noutput: %s", c.updateArgs, string(output))
 
 			for _, binary := range c.binariesToInstall {
 				version, err := getVersion(t, gobin, binary.name)
-				require.Nil(t, err)
+				require.Nilf(t, err, "could not get version of %s after updating", binary.name)
 				binary.afterUpdate(t, version)
 			}
 
@@ -197,16 +197,16 @@ func TestBuiltFromSourceCommandLineArguments(t *testing.T) {
 	defer os.RemoveAll(gobin)
 
 	builtBinaryName := binaryName("built-binary")
-	err := newTestCommand(t, gobin, "go", "build", "-o", filepath.Join(gobin, builtBinaryName), mainGoBinaryPath).Run()
-	require.Nil(t, err)
+	output, err := newTestCommand(t, gobin, "go", "build", "-o", filepath.Join(gobin, builtBinaryName), mainGoBinaryPath).CombinedOutput()
+	require.Nilf(t, err, "could not build %s\noutput: %s", mainGoBinaryPath, string(output))
 
-	output, err := newGoGlobalUpdateCommand(t, gobin, builtBinaryName).Output()
-	assert.Nil(t, err)
+	output, err = newGoGlobalUpdateCommand(t, gobin, builtBinaryName).CombinedOutput()
+	assert.Nilf(t, err, "could not run go-global-update for %s\noutput: %s", builtBinaryName, string(output))
 	assert.Contains(t, string(output), fmt.Sprintf("%s (version: (devel), cannot upgrade)", builtBinaryName))
 	assert.Contains(t, string(output), "binary was built from source")
 
 	version, err := newTestCommand(t, gobin, "go", "version", "-m", filepath.Join(gobin, builtBinaryName)).Output()
-	assert.Nil(t, err)
+	assert.Nil(t, err, "could not get version of", builtBinaryName)
 	assert.Contains(t, string(version), "(devel)", "Binary was upgraded but binaries built from source should be skipped")
 }
 
@@ -220,22 +220,22 @@ func TestInstalledFromSource(t *testing.T) {
 	defer os.RemoveAll(gobin)
 
 	repositoryDir, err := filepath.Abs("..")
-	require.Nil(t, err)
+	require.Nil(t, err, "could not get the absolute filepath of the repository")
 
 	installCommand := newTestCommand(t, gobin, "go", "install")
 	installCommand.Dir = repositoryDir
 
 	err = installCommand.Run()
-	require.Nil(t, err)
+	require.Nil(t, err, "could not run go install for the go-global-update repository")
 
 	builtBinaryName := binaryName("go-global-update")
 	output, err := newGoGlobalUpdateCommand(t, gobin, builtBinaryName).Output()
-	assert.Nil(t, err)
+	assert.Nil(t, err, "could not run go-global-update for", builtBinaryName)
 	assert.Contains(t, string(output), fmt.Sprintf("%s (version: (devel), can upgrade to v", builtBinaryName))
 	assert.Contains(t, string(output), "binary was installed from source")
 
 	version, err := newTestCommand(t, gobin, "go", "version", "-m", filepath.Join(gobin, builtBinaryName)).Output()
-	assert.Nil(t, err)
+	assert.Nil(t, err, "could not get version of", builtBinaryName)
 	assert.Contains(t, string(version), "(devel)", "Binary was upgraded but binaries built from source should be skipped")
 }
 
@@ -277,7 +277,7 @@ func TestDetectCommonProblems(t *testing.T) {
 			defer os.RemoveAll(gobin)
 
 			err := c.installCommand(t, gobin).Run()
-			require.Nil(t, err)
+			require.Nil(t, err, "could not run install command")
 
 			builtBinaryName := binaryName(c.binaryName)
 			output, err := newGoGlobalUpdateCommand(t, gobin, builtBinaryName).Output()
