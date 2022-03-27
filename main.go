@@ -1,24 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/Gelio/go-global-update/internal/gobinaries"
 	"github.com/Gelio/go-global-update/internal/gocli"
 	"github.com/Gelio/go-global-update/internal/updater"
+	"github.com/fatih/color"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
 	loggerConfig := zap.NewDevelopmentConfig()
-	logger, err := loggerConfig.Build()
-	if err != nil {
-		log.Fatalf("cannot initialize zap logger: %v", err)
-	}
-	defer logger.Sync()
 
 	app := &cli.App{
 		Name: "go-global-update",
@@ -46,11 +44,21 @@ func main() {
 				Name:  "verbose",
 				Usage: "Include more detailed information in the logs",
 			},
+			&cli.BoolFlag{
+				Name:  "colors",
+				Usage: "Force using ANSI color codes in the output even if the output is not a TTY.\n\t\tSet the `NO_COLOR` environment variable if you want to force-disable colors (see https://no-color.org/).",
+			},
 		},
 		Action: func(c *cli.Context) error {
+			logger, err := loggerConfig.Build()
+			if err != nil {
+				return fmt.Errorf("cannot initialize zap logger: %w", err)
+			}
+			defer logger.Sync()
+
 			cmdRunner := gocli.NewCmdRunner(logger)
 
-			err := updater.UpdateBinaries(
+			err = updater.UpdateBinaries(
 				logger,
 				updater.Options{
 					Debug:            c.Bool("debug"),
@@ -66,7 +74,11 @@ func main() {
 			return err
 		},
 		Before: func(c *cli.Context) error {
-			updateLoggerLevel(&loggerConfig, c)
+			debugMode := c.Bool("debug")
+			updateLoggerLevel(&loggerConfig, debugMode)
+			forceColors := c.Bool("colors")
+			updateLoggerColors(&loggerConfig, forceColors)
+
 			return nil
 		},
 	}
@@ -76,11 +88,17 @@ func main() {
 	}
 }
 
-func updateLoggerLevel(loggerConfig *zap.Config, c *cli.Context) {
+func updateLoggerLevel(loggerConfig *zap.Config, debugMode bool) {
 	logLevel := zap.InfoLevel
-	if c.Bool("debug") {
+	if debugMode {
 		logLevel = zap.DebugLevel
 	}
 
 	loggerConfig.Level.SetLevel(logLevel)
+}
+
+func updateLoggerColors(loggerConfig *zap.Config, forceColors bool) {
+	if forceColors || !color.NoColor {
+		loggerConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	}
 }
