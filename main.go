@@ -61,7 +61,6 @@ func main() {
 			err = updater.UpdateBinaries(
 				logger,
 				updater.Options{
-					Debug:            c.Bool("debug"),
 					DryRun:           c.Bool("dry-run"),
 					Verbose:          c.Bool("verbose"),
 					BinariesToUpdate: c.Args().Slice(),

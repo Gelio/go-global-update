@@ -12,7 +12,6 @@ import (
 )
 
 type Options struct {
-	Debug   bool
 	Verbose bool
 	DryRun  bool
 	// List of binary names to update.
