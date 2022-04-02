@@ -1,6 +1,6 @@
 # go-global-update
 
-![go-global-update screenshot](https://user-images.githubusercontent.com/889383/158154631-60da69af-7159-4a33-b564-1a4ae1ce3328.png)
+![go-global-update screenshot](https://user-images.githubusercontent.com/889383/161372879-8cf4bd33-ced2-45ad-a27d-888b15ae0dbc.png)
 
 Update globally installed go binaries.
 
