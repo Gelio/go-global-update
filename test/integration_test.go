@@ -152,6 +152,11 @@ func TestIntegration(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:              "multiple binaries with forced colored output",
+			updateArgs:        []string{"--colors"},
+			binariesToInstall: []binaryToInstall{gnosticBinaryToInstall, shfmtBinaryToInstall},
+		},
 	}
 
 	ensureIntegrationTestsDirExists(t)
@@ -201,7 +206,7 @@ func TestBuiltFromSourceCommandLineArguments(t *testing.T) {
 
 	output, err = newGoGlobalUpdateCommand(t, gobin, builtBinaryName).CombinedOutput()
 	assert.Nilf(t, err, "could not run go-global-update for %s\noutput: %s", builtBinaryName, string(output))
-	assert.Contains(t, string(output), fmt.Sprintf("%s (version: (devel), cannot upgrade)", builtBinaryName))
+	assert.Regexp(t, fmt.Sprintf("%s\\s+\\(devel\\)\\s+cannot upgrade", builtBinaryName), string(output))
 	assert.Contains(t, string(output), "binary was built from source")
 
 	version, err := newTestCommand(t, gobin, "go", "version", "-m", filepath.Join(gobin, builtBinaryName)).Output()
@@ -230,7 +235,7 @@ func TestInstalledFromSource(t *testing.T) {
 	builtBinaryName := binaryName("go-global-update")
 	output, err := newGoGlobalUpdateCommand(t, gobin, builtBinaryName).Output()
 	assert.Nil(t, err, "could not run go-global-update for", builtBinaryName)
-	assert.Contains(t, string(output), fmt.Sprintf("%s (version: (devel), can upgrade to v", builtBinaryName))
+	assert.Regexp(t, fmt.Sprintf("%s\\s+\\(devel\\)\\s+can upgrade to v", builtBinaryName), string(output))
 	assert.Contains(t, string(output), "binary was installed from source")
 
 	version, err := newTestCommand(t, gobin, "go", "version", "-m", filepath.Join(gobin, builtBinaryName)).Output()

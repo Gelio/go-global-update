@@ -3,6 +3,9 @@ package updater
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/Gelio/go-global-update/internal/colors"
+	"github.com/fatih/color"
 )
 
 var troubleshootingBaseURL string = "https://github.com/Gelio/go-global-update/blob/main/TROUBLESHOOTING.md"
@@ -22,10 +25,12 @@ var binaryBuiltFromSourceProblem CommonUpdateProblem = CommonUpdateProblem{
 	name:                       "E001",
 }
 
-func (p *CommonUpdateProblem) String() string {
+func (p *CommonUpdateProblem) String(f *colors.DecoratorFactory) string {
+	errorNameFormatter := f.NewDecorator(color.Bold)
+	urlFormatter := f.NewDecorator(color.Faint)
 	return fmt.Sprintf(`    This seems like a known problem %s.
     See %s
-    for more information.`, p.name, p.troubleshootingURL())
+    for more information.`, errorNameFormatter(p.name), urlFormatter(p.troubleshootingURL()))
 }
 
 var commonUpdateProblems []CommonUpdateProblem = []CommonUpdateProblem{
