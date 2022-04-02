@@ -7,6 +7,8 @@ Update globally installed go binaries.
 The missing go command similar to `npm -g update` or
 [cargo install-update](https://github.com/nabijaczleweli/cargo-update).
 
+## Table of contents
+
 <!-- toc -->
 
 - [Requirements](#requirements)
@@ -15,6 +17,7 @@ The missing go command similar to `npm -g update` or
 - [Upgrading `go-global-update`](#upgrading-go-global-update)
 - [Troubleshooting](#troubleshooting)
 - [How it works](#how-it-works)
+- [Alternative tools](#alternative-tools)
 - [Contributing](#contributing)
 
 <!-- tocstop -->
@@ -85,6 +88,47 @@ look at [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for more information.
 
 1. If the binary has a newer version, run `go install [package path]@latest` to
    update it.
+
+## Alternative tools
+
+`go-global-update` is not the only tool trying to solve the problem of updating
+globally-installed go binaries. The alternatives are:
+
+- [gup](https://github.com/nao1215/gup)
+
+  Advantages:
+
+  - includes desktop notifications
+  - has a subcommand to remove a binary
+  - has a way to export/import a list of binaries
+
+  Disadvantages:
+
+  - does not offer troubleshooting information when an upgrade fails
+  - does not report error logs from failed updates
+  - updates binaries installed from source (potentially overwrites locally-made
+    changes)
+
+- [binstale](https://github.com/shurcooL/binstale)
+
+  Disadvantages:
+
+  - seems not to detect globally-installed binaries using go modules
+
+    ```sh
+    $ binstale
+    binstale
+         (no source package found)
+    go-global-update
+         stale: github.com/Gelio/go-global-update (stale dependency: github.com/Gelio/go-global-update/internal/colors)
+    gofumpt
+         (no source package found)
+    gotop
+         (no source package found)
+    misspell
+         (no source package found)
+    shfmt
+    ```
 
 ## Contributing
 
