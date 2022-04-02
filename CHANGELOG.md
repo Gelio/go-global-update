@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.2.0 (2022-04-02)
+
 ### Improved
 
 - Improve output by formatting the binary versions summary in a table and adding

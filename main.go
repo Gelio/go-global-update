@@ -30,7 +30,7 @@ func main() {
 
    * go-global-update gofumpt gopls shfmt
    * go-global-update --dry-run`,
-		Version:   "v0.1.2",
+		Version:   "v0.2.0",
 		ArgsUsage: "[binaries to update...]",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
