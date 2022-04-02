@@ -5,7 +5,7 @@
 ### Improved
 
 - Improve output by formatting the binary versions summary in a table and adding
-  colors.
+  colors <https://github.com/Gelio/go-global-update/pull/10>.
 
   This should make the output easier and faster to understand.
 
@@ -38,6 +38,11 @@
   due to a known reason.
 
   ![screenshot](https://user-images.githubusercontent.com/889383/159443820-3c11044b-016d-4df3-8d33-983aa2b251ba.png)
+
+- List alternative tools to `go-global-update` in the README
+  <https://github.com/Gelio/go-global-update/pull/11>.
+
+  Describe their advantages and disadvantages.
 
 ### Maintenance
 
