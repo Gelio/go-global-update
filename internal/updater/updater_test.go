@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/Gelio/go-global-update/internal/colors"
 	"github.com/Gelio/go-global-update/internal/gobinaries"
 	"github.com/Gelio/go-global-update/internal/gobinariestest"
 	"github.com/Gelio/go-global-update/internal/goclitest"
@@ -59,18 +61,21 @@ func TestUpdateAllFoundBinaries(t *testing.T) {
 	}
 
 	fsutils := mockFilesystemUtils{}
+	colorsFactory := colors.NewFactory(false)
 
-	err := UpdateBinaries(logger, options, &output, &cmdRunner, &lister, fsutils)
+	err := UpdateBinaries(logger, options, &output, &colorsFactory, &cmdRunner, &lister, fsutils)
 
 	assert.Nil(t, err)
-	assert.Equal(t, `gofumpt (version: v0.3.0, can upgrade to v0.4.0)
-shfmt (version: v3.4.2, can upgrade to v3.4.3)
+	assert.Equal(t, strings.TrimSpace(`
+Binary       Current version      Status
+gofumpt      v0.3.0               can upgrade to v0.4.0
+shfmt        v3.4.2               can upgrade to v3.4.3
 
 Upgrading gofumpt to v0.4.0 ... ✅
 
 Upgrading shfmt to v3.4.3 ... ✅
 
-`, output.String())
+`), strings.TrimSpace(output.String()))
 }
 
 func TestSkipUpgradingBuiltFromSource(t *testing.T) {
@@ -126,12 +131,15 @@ installed-from-source: go1.17
 	}
 
 	fsutils := mockFilesystemUtils{}
+	colorsFactory := colors.NewFactory(false)
 
-	err := UpdateBinaries(logger, options, &output, &cmdRunner, &lister, fsutils)
+	err := UpdateBinaries(logger, options, &output, &colorsFactory, &cmdRunner, &lister, fsutils)
 
 	assert.Nil(t, err)
-	assert.Equal(t, `built-from-source (version: (devel), cannot upgrade)
-installed-from-source (version: (devel), can upgrade to v0.1.0)
+	assert.Equal(t, strings.TrimSpace(`
+Binary                     Current version      Status
+built-from-source          (devel)              cannot upgrade
+installed-from-source      (devel)              can upgrade to v0.1.0
 
 Skipping upgrading built-from-source
     The binary was built from source (probably using "go build") and the binary path is unknown.
@@ -142,10 +150,10 @@ Skipping upgrading built-from-source
 
 Skipping upgrading installed-from-source
     The binary was installed from source (probably using "go install" in the cloned repository).
-    Install the binary using "go install repositoryPath@latest" instead.
+    Install the binary using "go install github.com/Gelio/built-from-source@latest" instead.
     This seems like a known problem E001.
     See https://github.com/Gelio/go-global-update/blob/main/TROUBLESHOOTING.md#e001---binaries-built-from-source
     for more information.
 
-`, output.String())
+  `), strings.TrimSpace(output.String()))
 }

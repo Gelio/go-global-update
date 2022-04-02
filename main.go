@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Gelio/go-global-update/internal/colors"
 	"github.com/Gelio/go-global-update/internal/gobinaries"
 	"github.com/Gelio/go-global-update/internal/gocli"
 	"github.com/Gelio/go-global-update/internal/updater"
@@ -50,6 +51,9 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
+			forceColors := c.Bool("colors")
+			colorsDecoratorFactory := colors.NewFactory(forceColors)
+
 			logger, err := loggerConfig.Build()
 			if err != nil {
 				return fmt.Errorf("cannot initialize zap logger: %w", err)
@@ -66,6 +70,7 @@ func main() {
 					BinariesToUpdate: c.Args().Slice(),
 				},
 				os.Stdout,
+				&colorsDecoratorFactory,
 				&cmdRunner,
 				&gobinaries.FilesystemDirectoryLister{},
 				&updater.Filesystem{},

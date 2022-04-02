@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+### Improved
+
+- Improve output by formatting the binary versions summary in a table and adding
+  colors.
+
+  This should make the output easier and faster to understand.
+
+  ![go-global-update output with colors](https://user-images.githubusercontent.com/889383/161372879-8cf4bd33-ced2-45ad-a27d-888b15ae0dbc.png)
+
+  Colors are enabled when the output is a TTY (for example if the command is run
+  directly in the terminal and the output is shown in the terminal). They will
+  be disabled if the output is saved to a file or in some temporary buffer.
+
+  Colors can be force-enabled by passing the `--colors` flag to the CLI. In the
+  following example, `less -r` will render the colors even though the command
+  did not print to the terminal directly.
+
+  ```sh
+  go-global-update --colors > output.txt
+  less -r output.txt
+  ```
+
+  Colors will not be shown if the `NO_COLOR` environment variable is defined,
+  regardless of its value (abides by <https://no-color.org/>).
+
 ### Added
 
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) containing a description of common
