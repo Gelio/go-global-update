@@ -19,6 +19,14 @@ import (
 func main() {
 	loggerConfig := zap.NewDevelopmentConfig()
 
+	// NOTE: re-define the version flag to use `V` instead of `v` as the alias
+	// `-v` belongs to the `--verbose` flag
+	cli.VersionFlag = &cli.BoolFlag{
+		Name:    "version",
+		Aliases: []string{"V"},
+		Usage:   "print the version",
+	}
+
 	app := &cli.App{
 		Name: "go-global-update",
 		Usage: `Update globally installed go binaries.
@@ -38,12 +46,14 @@ func main() {
 				Usage: "Display debug information",
 			},
 			&cli.BoolFlag{
-				Name:  "dry-run",
-				Usage: "Check which binaries are upgradable without actually installing new versions",
+				Name:    "dry-run",
+				Aliases: []string{"n"},
+				Usage:   "Check which binaries are upgradable without actually installing new versions",
 			},
 			&cli.BoolFlag{
-				Name:  "verbose",
-				Usage: "Include more detailed information in the logs",
+				Name:    "verbose",
+				Aliases: []string{"v"},
+				Usage:   "Include more detailed information in the logs",
 			},
 			&cli.BoolFlag{
 				Name:  "colors",
