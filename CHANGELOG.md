@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.2.1 (2022-04-03)
+
 ### Added
 
 - Short aliases for `--dry-run` and `--verbose` flags.
