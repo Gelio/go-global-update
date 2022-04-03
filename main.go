@@ -47,7 +47,7 @@ func main() {
 			},
 			&cli.BoolFlag{
 				Name:  "colors",
-				Usage: "Force using ANSI color codes in the output even if the output is not a TTY.\n\t\tSet the `NO_COLOR` environment variable if you want to force-disable colors (see https://no-color.org/).",
+				Usage: "Force using ANSI color codes in the output even if the output is not a TTY.\n\t\tSet the NO_COLOR environment variable if you want to force-disable colors (see https://no-color.org/).",
 			},
 		},
 		Action: func(c *cli.Context) error {
