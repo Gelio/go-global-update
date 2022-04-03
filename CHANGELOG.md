@@ -2,11 +2,31 @@
 
 ## Unreleased
 
+## v0.2.2 (2022-04-03)
+
+### Fixed
+
+- Allow combining short options in a single CLI argument
+  <https://github.com/Gelio/go-global-update/pull/17>.
+
+  Short flags can be used in a single CLI argument, POSIX-style:
+
+  ```sh
+  go-global-update -nv
+  ```
+
+  is equivalent to
+
+  ```sh
+  go-global-update -n -v
+  ```
+
 ## v0.2.1 (2022-04-03)
 
 ### Added
 
-- Short aliases for `--dry-run` and `--verbose` flags.
+- Short aliases for `--dry-run` and `--verbose` flags
+  <https://github.com/Gelio/go-global-update/pull/16>.
 
   There are new alases for some of the options that the tools accepts:
 
