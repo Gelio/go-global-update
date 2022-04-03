@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+### Added
+
+- Short aliases for `--dry-run` and `--verbose` flags.
+
+  There are new alases for some of the options that the tools accepts:
+
+  - `-n` is an alias for `--dry-run`
+  - `-v` is an alias for `--verbose`
+
+  This should make it easier to use the tool for experienced users.
+
+  **BREAKING CHANGE**: a potential breaking change is that the `-v` flag was
+  previously an alias for `--version` and now is an alias for `--verbose`.
+  Running `go-global-update -v` will run the update process instead of only
+  printing the version. To print the version, use the `-V` flag (or the full
+  `--version` flag).
+
 ## v0.2.0 (2022-04-02)
 
 ### Improved
