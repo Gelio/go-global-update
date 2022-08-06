@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Include go 1.19 in CI <https://github.com/Gelio/go-global-update/pull/18>.
+
 ## v0.2.2 (2022-04-03)
 
 ### Fixed
