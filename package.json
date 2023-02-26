@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "markdown-toc": "^1.2.0",
-    "prettier": "^2.6.1"
+    "prettier": "^2.8.4"
   },
   "scripts": {
     "generate-toc:readme": "markdown-toc -i ./README.md",
