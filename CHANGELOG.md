@@ -2,7 +2,22 @@
 
 ## Unreleased
 
-- Include go 1.19 in CI <https://github.com/Gelio/go-global-update/pull/18>.
+## v0.2.3 (2023-09-19)
+
+### Improvements
+
+- Speed up introspecting binaries
+  <https://github.com/Gelio/go-global-update/pull/19>.
+
+  This speeds up the process of checking the latest versions of binaries, both
+  for cached and uncached runs.
+
+  Thanks [mroth](https://github.com/mroth) for implementing this feature!
+
+### Internal
+
+- Include go 1.21 and the latest stable version in CI
+  <https://github.com/Gelio/go-global-update/pull/20>.
 
 ## v0.2.2 (2022-04-03)
 
