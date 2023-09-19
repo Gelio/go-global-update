@@ -9,7 +9,7 @@ jobs:
   build-and-test:
     strategy:
       matrix:
-        go-version: ["1.17", "1.18", "1.19", "1.20"]
+        go-version: ["1.18", "1.19", "1.20", "1.21", "stable"]
         os: [ubuntu-latest, macos-latest, windows-latest]
       # Continue other jobs if one matrix job fails
       fail-fast: false
@@ -25,7 +25,8 @@ jobs:
         # NOTE: only verify formatting on Linux and the latest go version.
         # It only needs to happen once, and formatting
         # is not consistent on Windows.
-        if: ${{ startsWith(matrix.os, 'ubuntu') && matrix.go-version == '1.20'}}
+        if:
+          ${{ startsWith(matrix.os, 'ubuntu') && matrix.go-version == 'stable'}}
 
         # NOTE: hacky bash `if` because gofumpt always returns 0 exit code
         # @see https://github.com/mvdan/gofumpt/issues/114
