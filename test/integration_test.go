@@ -127,7 +127,7 @@ func TestIntegration(t *testing.T) {
 					name:           gnosticBinaryToInstall.name,
 					pathAndVersion: gnosticBinaryToInstall.pathAndVersion,
 					beforeUpdate:   gnosticBinaryToInstall.beforeUpdate,
-					// NOTE: the gofumpt binary should not be upgraded
+					// NOTE: the binary should not be upgraded
 					afterUpdate: gnosticBinaryToInstall.beforeUpdate,
 				},
 			},
