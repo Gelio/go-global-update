@@ -78,14 +78,20 @@ func main() {
 
 			cmdRunner := gocli.NewCmdRunner(logger)
 
+			options := updater.Options{
+				DryRun:           c.Bool("dry-run"),
+				Verbose:          c.Bool("verbose"),
+				ForceReinstall:   c.Bool("force"),
+				BinariesToUpdate: c.Args().Slice(),
+			}
+
+			if options.DryRun && options.ForceReinstall {
+				return fmt.Errorf("--dry-run and --force options cannot be used together")
+			}
+
 			err = updater.UpdateBinaries(
 				logger,
-				updater.Options{
-					DryRun:           c.Bool("dry-run"),
-					Verbose:          c.Bool("verbose"),
-					ForceReinstall:   c.Bool("force"),
-					BinariesToUpdate: c.Args().Slice(),
-				},
+				options,
 				os.Stdout,
 				&colorsDecoratorFactory,
 				&cmdRunner,
