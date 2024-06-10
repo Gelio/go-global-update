@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## Added
+### Added
 
 - A new `--force` flag (alias: `-f`)
   <https://github.com/Gelio/go-global-update/pull/23>.
@@ -15,6 +15,10 @@
 
   Thanks to [@thejan2009](https://github.com/thejan2009) for suggesting this
   feature.
+
+### Internal
+
+- Include go 1.22 in CI <https://github.com/Gelio/go-global-update/pull/24>.
 
 ## v0.2.3 (2023-09-19)
 
