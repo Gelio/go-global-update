@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.2.4 (2024-06-10)
+
 ### Added
 
 - A new `--force` flag (alias: `-f`)
