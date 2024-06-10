@@ -60,6 +60,11 @@ func main() {
 				Name:  "colors",
 				Usage: "Force using ANSI color codes in the output even if the output is not a TTY.\n\t\tSet the NO_COLOR environment variable if you want to force-disable colors (see https://no-color.org/).",
 			},
+			&cli.BoolFlag{
+				Name:    "force",
+				Aliases: []string{"f"},
+				Usage:   "Force reinstall all binaries, even if they do not need to be updated",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			forceColors := c.Bool("colors")
@@ -73,13 +78,20 @@ func main() {
 
 			cmdRunner := gocli.NewCmdRunner(logger)
 
+			options := updater.Options{
+				DryRun:           c.Bool("dry-run"),
+				Verbose:          c.Bool("verbose"),
+				ForceReinstall:   c.Bool("force"),
+				BinariesToUpdate: c.Args().Slice(),
+			}
+
+			if options.DryRun && options.ForceReinstall {
+				return fmt.Errorf("--dry-run and --force options cannot be used together")
+			}
+
 			err = updater.UpdateBinaries(
 				logger,
-				updater.Options{
-					DryRun:           c.Bool("dry-run"),
-					Verbose:          c.Bool("verbose"),
-					BinariesToUpdate: c.Args().Slice(),
-				},
+				options,
 				os.Stdout,
 				&colorsDecoratorFactory,
 				&cmdRunner,

@@ -157,3 +157,46 @@ Skipping upgrading installed-from-source
 
   `), strings.TrimSpace(output.String()))
 }
+
+func TestForceReinstallingBinaries(t *testing.T) {
+	gofumptMockBinary := gobinariestest.GetGofumptMockBinary()
+	shfmtMockBinary := gobinariestest.GetShfmtMockBinary()
+	shfmtMockBinary.Binary.LatestVersion = "v3.4.3"
+
+	logger := zap.NewNop()
+	options := Options{
+		ForceReinstall: true,
+	}
+	var output bytes.Buffer
+	lister := gobinariestest.TestSuccessDirectoryLister{
+		Entries: []string{gofumptMockBinary.Binary.Name, shfmtMockBinary.Binary.Name},
+	}
+	cmdRunner := goclitest.TestGoCmdRunner{
+		Responses: []goclitest.MockResponse{
+			gobinMockResponse(),
+			gobinariestest.GetLatestVersionMockResponse(gofumptMockBinary.Binary),
+			gobinariestest.GetModuleInfoMockResponse(gofumptMockBinary),
+			updateMockResponse(gofumptMockBinary.Binary, "", nil),
+			gobinariestest.GetLatestVersionMockResponse(shfmtMockBinary.Binary),
+			gobinariestest.GetModuleInfoMockResponse(shfmtMockBinary),
+			updateMockResponse(shfmtMockBinary.Binary, "", nil),
+		},
+	}
+
+	fsutils := mockFilesystemUtils{}
+	colorsFactory := colors.NewFactory(false)
+
+	err := UpdateBinaries(logger, options, &output, &colorsFactory, &cmdRunner, &lister, fsutils)
+
+	assert.Nil(t, err)
+	assert.Equal(t, strings.TrimSpace(`
+Binary       Current version      Status
+gofumpt      v0.3.0               up-to-date
+shfmt        v3.4.2               can upgrade to v3.4.3
+
+Force-reinstalling gofumpt v0.3.0 ... ✅
+
+Upgrading shfmt to v3.4.3 ... ✅
+
+`), strings.TrimSpace(output.String()))
+}

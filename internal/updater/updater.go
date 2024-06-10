@@ -20,6 +20,8 @@ type Options struct {
 	// List of binary names to update.
 	// If empty, will update all binaries in GOBIN
 	BinariesToUpdate []string
+	// Whether to force reinstalling/updating all binaries.
+	ForceReinstall bool
 }
 
 // UpdateBinaries updates binaries in GOBIN
@@ -57,7 +59,7 @@ func UpdateBinaries(
 	printBinariesSummary(introspectionResults, out, colorsFactory, options.Verbose)
 
 	if !options.DryRun {
-		return updateBinaries(introspectionResults, &goCLI, out, colorsFactory, options.Verbose)
+		return updateBinaries(introspectionResults, &goCLI, out, colorsFactory, options)
 	}
 
 	return nil
@@ -122,7 +124,7 @@ func updateBinaries(
 	goCLI *gocli.GoCLI,
 	out io.Writer,
 	colorsFactory *colors.DecoratorFactory,
-	verbose bool,
+	options Options,
 ) error {
 	var upgradeErrors []error
 	var binariesToUpdate []gobinaries.GoBinary
@@ -133,12 +135,19 @@ func updateBinaries(
 	faintFormatter := colorsFactory.NewDecorator(color.Faint)
 
 	for _, result := range introspectionResults {
-		if result.Error != nil || !result.Binary.UpgradePossible() {
+		if result.Error != nil {
+			continue
+		}
+		if !result.Binary.UpgradePossible() && !options.ForceReinstall {
 			continue
 		}
 
 		if binary := result.Binary; binary.BuiltFromSource() {
-			fmt.Fprintf(out, "Skipping upgrading %s\n    ", binaryNameFormatter(binary.Name))
+			verb := "reinstalling"
+			if result.Binary.UpgradePossible() {
+				verb = "upgrading"
+			}
+			fmt.Fprintf(out, "Skipping %s %s\n    ", verb, binaryNameFormatter(binary.Name))
 			if binary.BuiltWithGoBuild() {
 				fmt.Fprintf(out, "The binary was built from source (probably using \"%s\") and the binary path is unknown.\n",
 					faintFormatter("go build"))
@@ -169,18 +178,23 @@ func updateBinaries(
 	latestVersionFormatter := colorsFactory.NewDecorator(color.FgGreen)
 
 	for _, binary := range binariesToUpdate {
-		fmt.Fprintf(out, "Upgrading %s to %s ... ", binaryNameFormatter(binary.Name),
-			latestVersionFormatter(binary.LatestVersion))
+		if binary.UpgradePossible() {
+			fmt.Fprintf(out, "Upgrading %s to %s ... ", binaryNameFormatter(binary.Name),
+				latestVersionFormatter(binary.LatestVersion))
+		} else {
+			fmt.Fprintf(out, "Force-reinstalling %s %s ... ", binaryNameFormatter(binary.Name),
+				latestVersionFormatter(binary.LatestVersion))
+		}
 		upgradeOutput, err := goCLI.UpgradePackage(binary.PathURL)
 		if err != nil {
 			upgradeErrors = append(upgradeErrors, err)
 			fmt.Fprintln(out, "❌")
-			fmt.Fprintln(out, "    Could not upgrade package")
+			fmt.Fprintln(out, "    Could not install package")
 		} else {
 			fmt.Fprintln(out, "✅")
 		}
 
-		if len(upgradeOutput) > 0 && (verbose || err != nil) {
+		if len(upgradeOutput) > 0 && (options.Verbose || err != nil) {
 			fmt.Fprintln(out, upgradeOutput)
 
 			for _, problem := range FindCommonUpdateProblems(upgradeOutput) {
@@ -191,7 +205,7 @@ func updateBinaries(
 	}
 
 	if len(upgradeErrors) > 0 {
-		return fmt.Errorf("could not upgrade %s package(s)",
+		return fmt.Errorf("could not install %s package(s)",
 			colorsFactory.NewDecorator(color.FgRed, color.Bold)(len(upgradeErrors)))
 	}
 
