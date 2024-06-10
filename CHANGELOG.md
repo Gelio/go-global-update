@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## Added
+### Added
 
 - A new `--force` flag (alias: `-f`)
   <https://github.com/Gelio/go-global-update/pull/23>.
