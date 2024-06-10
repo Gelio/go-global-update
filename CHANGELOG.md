@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## Added
+
+- A new `--force` flag (alias: `-f`)
+  <https://github.com/Gelio/go-global-update/pull/23>.
+
+  The `--force` flag forces reinstalling binaries that are already up-to-date
+  and would otherwise be skipped when upgrading the versions.
+
+  This can be used to reinstall all binaries after a new version of go is
+  installed, especially when it fixes security vulnerabilities.
+
+  Thanks to [@thejan2009](https://github.com/thejan2009) for suggesting this
+  feature.
+
 ## v0.2.3 (2023-09-19)
 
 ### Improvements
