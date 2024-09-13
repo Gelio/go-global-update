@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.2.5 (2024-09-13)
+
 ### Added
 
 - Preserve build tags when updating/reinstalling binaries
