@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/Gelio/go-global-update/internal/colors"
@@ -178,14 +179,19 @@ func updateBinaries(
 	latestVersionFormatter := colorsFactory.NewDecorator(color.FgGreen)
 
 	for _, binary := range binariesToUpdate {
-		if binary.UpgradePossible() {
-			fmt.Fprintf(out, "Upgrading %s to %s ... ", binaryNameFormatter(binary.Name),
-				latestVersionFormatter(binary.LatestVersion))
-		} else {
-			fmt.Fprintf(out, "Force-reinstalling %s %s ... ", binaryNameFormatter(binary.Name),
-				latestVersionFormatter(binary.LatestVersion))
+		var buildTagsInfo string
+		if len(binary.BuildTags) > 0 {
+			buildTagsInfo = fmt.Sprintf(" (build tags: %s)", faintFormatter(strings.Join(binary.BuildTags, ",")))
 		}
-		upgradeOutput, err := goCLI.UpgradePackage(binary.PathURL)
+
+		if binary.UpgradePossible() {
+			fmt.Fprintf(out, "Upgrading %s to %s%s ... ", binaryNameFormatter(binary.Name),
+				latestVersionFormatter(binary.LatestVersion), buildTagsInfo)
+		} else {
+			fmt.Fprintf(out, "Force-reinstalling %s %s%s ... ", binaryNameFormatter(binary.Name),
+				latestVersionFormatter(binary.LatestVersion), buildTagsInfo)
+		}
+		upgradeOutput, err := goCLI.UpgradePackage(binary.PathURL, binary.BuildTags)
 		if err != nil {
 			upgradeErrors = append(upgradeErrors, err)
 			fmt.Fprintln(out, "❌")

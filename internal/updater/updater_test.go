@@ -200,3 +200,46 @@ Upgrading shfmt to v3.4.3 ... ✅
 
 `), strings.TrimSpace(output.String()))
 }
+
+func TestPreserveBuildTags(t *testing.T) {
+	shfmtMockBinary := gobinariestest.GetShfmtMockBinary()
+	shfmtMockBinary.Binary.BuildTags = []string{"a", "b", "c"}
+	shfmtMockBinary.Binary.LatestVersion = "v3.4.3"
+	shfmtMockBinary.ModuleInfo = fmt.Sprintf(`%s
+  build  -tags=a,b,c`, shfmtMockBinary.ModuleInfo)
+
+	logger := zap.NewNop()
+	options := Options{
+		ForceReinstall: true,
+	}
+	var output bytes.Buffer
+	lister := gobinariestest.TestSuccessDirectoryLister{
+		Entries: []string{shfmtMockBinary.Binary.Name},
+	}
+	cmdRunner := goclitest.TestGoCmdRunner{
+		Responses: []goclitest.MockResponse{
+			gobinMockResponse(),
+			gobinariestest.GetLatestVersionMockResponse(shfmtMockBinary.Binary),
+			gobinariestest.GetModuleInfoMockResponse(shfmtMockBinary),
+			{
+				Args:   []string{"install", "-tags", "a,b,c", fmt.Sprintf("%s@latest", shfmtMockBinary.Binary.PathURL)},
+				Output: "",
+				Error:  nil,
+			},
+		},
+	}
+
+	fsutils := mockFilesystemUtils{}
+	colorsFactory := colors.NewFactory(false)
+
+	err := UpdateBinaries(logger, options, &output, &colorsFactory, &cmdRunner, &lister, fsutils)
+
+	assert.Nil(t, err)
+	assert.Equal(t, strings.TrimSpace(`
+Binary      Current version      Status
+shfmt       v3.4.2               can upgrade to v3.4.3
+
+Upgrading shfmt to v3.4.3 (build tags: a,b,c) ... ✅
+
+`), strings.TrimSpace(output.String()))
+}
