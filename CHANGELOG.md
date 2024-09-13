@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Internal
+
+- Include go 1.23 in CI
+
 ## v0.2.4 (2024-06-10)
 
 ### Added
