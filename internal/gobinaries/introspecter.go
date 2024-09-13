@@ -49,6 +49,7 @@ func (i *Introspecter) Introspect(binaryName string) (GoBinary, error) {
 		Name:          binaryName,
 		Path:          binaryPath,
 		LatestVersion: latestVersion,
+		BuildTags:     moduleInfo.buildTags,
 	}
 	i.logger.Sugar().Debugf("introspected binary %s: %+v", binaryName, goBinary)
 
@@ -59,6 +60,7 @@ type parsedGoModuleInfo struct {
 	moduleURL string
 	pathURL   string
 	version   string
+	buildTags []string
 }
 
 func (i *Introspecter) getModuleInfo(binaryPath string) (*parsedGoModuleInfo, error) {
@@ -69,6 +71,12 @@ func (i *Introspecter) getModuleInfo(binaryPath string) (*parsedGoModuleInfo, er
 	goModuleInfo := findModuleURLInModuleOutput(moduleOutput)
 	if goModuleInfo == nil {
 		return nil, fmt.Errorf("could not parse module information for binary %s", binaryPath)
+	}
+	goModuleInfo.buildTags = findBuildTagsInModuleOutput(moduleOutput)
+	if len(goModuleInfo.buildTags) > 0 {
+		i.logger.Sugar().Debugf("found build tags for binary %s: %v", binaryPath, goModuleInfo.buildTags)
+	} else {
+		i.logger.Sugar().Debugf("no build tags found for binary %s", binaryPath)
 	}
 
 	return goModuleInfo, nil
@@ -118,4 +126,22 @@ func findModuleURLInModuleOutput(output string) *parsedGoModuleInfo {
 	}
 
 	return &goModuleInfo
+}
+
+func findBuildTagsInModuleOutput(output string) []string {
+	r := regexp.MustCompile((`^\s+build\s+-tags=(([^,]+)(,[^,]+)*)$`))
+
+	var buildTags []string
+
+	for _, l := range strings.Split(output, "\n") {
+		matches := r.FindStringSubmatch(l)
+		if len(matches) == 0 {
+			continue
+		}
+
+		buildTags = strings.Split(matches[1], ",")
+		break
+	}
+
+	return buildTags
 }

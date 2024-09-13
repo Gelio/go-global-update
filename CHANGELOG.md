@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+### Added
+
+- Preserve build tags when updating/reinstalling binaries
+  <https://github.com/Gelio/go-global-update/pull/29>
+
+  Binaries installed with `go install -tags a,b,c ...` (build tags) will have
+  the build tags preserved when updating them. This means that the `go install`
+  command that `go-global-update` runs internally will also include the same
+  build tags.
+
+  This behavior is enabled by default and there is no flag to disable it.
+
+  This only affects binaries that were installed with build tags.
+
+  See
+  [Customizing Go Binaries with Build Tags](https://www.digitalocean.com/community/tutorials/customizing-go-binaries-with-build-tags)
+  for more information about build tags.
+
+  Fixes <https://github.com/Gelio/go-global-update/issues/28>.
+
 ### Internal
 
 - Include go 1.23 and drop versions earlier than 1.21 in CI

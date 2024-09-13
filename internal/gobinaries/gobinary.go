@@ -10,6 +10,12 @@ type GoBinary struct {
 	Path          string
 	Version       string
 	LatestVersion string
+
+	// Build tags that were used to build the binary.
+	// They correspond to the `-tags` option in `go build`.
+	//
+	// When updating a binary, the same build tags should be used.
+	BuildTags []string
 }
 
 func (b *GoBinary) UpgradePossible() bool {

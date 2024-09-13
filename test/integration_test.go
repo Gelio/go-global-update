@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,7 +23,7 @@ var mainGoBinaryPath string = filepath.Join("..", "main.go")
 // prepareTempoGobin returns an absolute path to a temporary directory. It
 // could serve as GOBIN for a test.
 func prepareTempGobin(t *testing.T) string {
-	gobin, err := ioutil.TempDir(INTEGRATION_TESTS_DIR, "test-")
+	gobin, err := os.MkdirTemp(INTEGRATION_TESTS_DIR, "test-")
 	require.Nil(t, err, "could not create a temporary directory for GOBIN")
 
 	gobin, err = filepath.Abs(gobin)
@@ -51,9 +50,15 @@ func newGoGlobalUpdateCommand(t *testing.T, gobin string, args ...string) *exec.
 	return newTestCommand(t, gobin, "go", args...)
 }
 
-func installBinary(t *testing.T, gobin, pathURL string) {
-	output, err := newTestCommand(t, gobin, "go", "install", pathURL).CombinedOutput()
-	require.Nilf(t, err, "could not install binary %s in GOBIN %s\noutput: %s", pathURL, gobin, string(output))
+func installBinary(t *testing.T, gobin, pathURL string, buildTags []string) {
+	args := []string{"install"}
+	if len(buildTags) > 0 {
+		args = append(args, "-tags", strings.Join(buildTags, ","))
+	}
+	args = append(args, pathURL)
+
+	output, err := newTestCommand(t, gobin, "go", args...).CombinedOutput()
+	require.Nilf(t, err, "could not install binary %s in GOBIN %s (args: %v)\noutput: %s", pathURL, gobin, args, string(output))
 }
 
 func getVersion(t *testing.T, gobin, binaryName string) (string, error) {
@@ -167,7 +172,7 @@ func TestIntegration(t *testing.T) {
 			gobin := prepareTempGobin(t)
 
 			for _, binary := range c.binariesToInstall {
-				installBinary(t, gobin, binary.pathAndVersion)
+				installBinary(t, gobin, binary.pathAndVersion, nil)
 			}
 
 			for _, binary := range c.binariesToInstall {
@@ -290,4 +295,26 @@ func TestDetectCommonProblems(t *testing.T) {
 			assert.Contains(t, string(output), c.expectedProblemCode, "problem code not found")
 		})
 	}
+}
+
+func TestPreserveBuildTags(t *testing.T) {
+	ensureIntegrationTestsDirExists(t)
+	gobin := prepareTempGobin(t)
+
+	installBinary(t, gobin, "mvdan.cc/sh/v3/cmd/shfmt@v3.4.2", []string{"tagA", "tagB"})
+	builtBinaryName := binaryName("shfmt")
+
+	output, err := getVersion(t, gobin, builtBinaryName)
+	require.Nilf(t, err, "could not get version of shfmt\noutput: %s", string(output))
+	require.Contains(t, output, "v3.4.2", "installed wrong version of the binary")
+	require.Contains(t, output, "-tags=tagA,tagB", "expected build tags not found")
+
+	outputBytes, err := newGoGlobalUpdateCommand(t, gobin, builtBinaryName).Output()
+	assert.Nilf(t, err, "could not run go-global-update for shfmt\noutput: %s", string(output))
+	assert.Contains(t, string(outputBytes), "(build tags: tagA,tagB)", "expected build tags to appear in the go-global-update output")
+
+	output, err = getVersion(t, gobin, builtBinaryName)
+	assert.Nilf(t, err, "could not get version of shfmt after updating\noutput: %s", string(output))
+	assert.Contains(t, output, "-tags=tagA,tagB", "expected build tags not found after updating")
+	assert.NotContains(t, output, "v3.4.2", "binary was not updated")
 }
