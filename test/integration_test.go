@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,7 +23,7 @@ var mainGoBinaryPath string = filepath.Join("..", "main.go")
 // prepareTempoGobin returns an absolute path to a temporary directory. It
 // could serve as GOBIN for a test.
 func prepareTempGobin(t *testing.T) string {
-	gobin, err := ioutil.TempDir(INTEGRATION_TESTS_DIR, "test-")
+	gobin, err := os.MkdirTemp(INTEGRATION_TESTS_DIR, "test-")
 	require.Nil(t, err, "could not create a temporary directory for GOBIN")
 
 	gobin, err = filepath.Abs(gobin)
