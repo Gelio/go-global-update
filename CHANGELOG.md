@@ -4,7 +4,18 @@
 
 ### Internal
 
-- Include go 1.23 in CI
+- Include go 1.23 and drop versions earlier than 1.21 in CI
+  <https://github.com/Gelio/go-global-update/pull/30>
+
+  The versions in CI now are closer to
+  [the Go release policy](https://go.dev/doc/devel/release). Go 1.21 is also
+  tested right now, even though it is no longer supported anymore.
+
+  This is mostly because
+  [the latest version of shfmt (v3.9.0)](https://github.com/mvdan/sh/releases/tag/v3.9.0)
+  no longer supports Go older than 1.21, and this breaks a lot of integration
+  tests. `go-global-update` itself should still work on earlier versions of Go,
+  but they are no longer tested in CI, and thus, no longer officially supported.
 
 ## v0.2.4 (2024-06-10)
 
