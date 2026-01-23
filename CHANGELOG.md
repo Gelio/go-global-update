@@ -103,7 +103,6 @@
   <https://github.com/Gelio/go-global-update/pull/16>.
 
   There are new alases for some of the options that the tools accepts:
-
   - `-n` is an alias for `--dry-run`
   - `-v` is an alias for `--verbose`
 
