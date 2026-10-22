@@ -10,7 +10,10 @@ Want to take a stab at making a code change? Pull requests are also welcome!
 
 Before submitting a pull request, make sure to complete the following steps:
 
-1. Format the Go code usign [gofumpt](https://github.com/mvdan/gofumpt)
+1. Format and lint the Go code with [golangci-lint](https://golangci-lint.run/).
+   Run `go tool -modfile=tools/go.mod golangci-lint fmt` and
+   `go tool -modfile=tools/go.mod golangci-lint run ./...` (or use a locally
+   installed golangci-lint of the same version).
 1. Ensure the tests pass by running `go test ./...`
 1. Regenerate the Markdown table of contents in case you changed Markdown files.
    Run `npm run generate-toc`

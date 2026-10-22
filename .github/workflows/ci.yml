@@ -24,28 +24,26 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Verify formatting
-
-        # NOTE: only verify formatting on Linux and the latest go version.
-        # It only needs to happen once, and formatting
-        # is not consistent on Windows.
-        if:
-          ${{ startsWith(matrix.os, 'ubuntu') && matrix.go-version == 'stable'}}
-
-        # NOTE: hacky bash `if` because gofumpt always returns 0 exit code
-        # @see https://github.com/mvdan/gofumpt/issues/114
-        run: |
-          go install mvdan.cc/gofumpt@latest
-          formatting_result=$(gofumpt -d .)
-          echo "$formatting_result"
-          if [[ "$formatting_result" ]]; then
-            echo "Invalid formatting"
-            exit 1
-          fi
-
       - run: go version
       - run: go build
       - run: go test ./...
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+
+      - name: Read golangci-lint version from tools/go.mod
+        id: golangci-version
+        run: |
+          echo "version=$(go list -modfile=tools/go.mod -m -f '{{.Version}}' github.com/golangci/golangci-lint/v2)" >> "$GITHUB_OUTPUT"
+
+      - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: ${{ steps.golangci-version.outputs.version }}
 
   verify-table-of-contents:
     runs-on: ubuntu-latest

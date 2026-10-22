@@ -17,7 +17,7 @@ import (
 
 type mockFilesystemUtils struct{}
 
-func (_ mockFilesystemUtils) Chdir(_ string) error {
+func (mockFilesystemUtils) Chdir(_ string) error {
 	return nil
 }
 
