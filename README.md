@@ -24,7 +24,15 @@ The missing go command similar to `npm -g update` or
 
 ## Requirements
 
-- Go 1.19 or higher
+- Go 1.26 or higher
+
+With the default `GOTOOLCHAIN=auto`, an older Go (1.21 or newer) downloads Go
+1.26 automatically when running the install command. This does not happen when
+`GOTOOLCHAIN=local` is set (some distro packages set it in `$GOROOT/go.env`) or
+when the module proxy is unreachable. With `GOTOOLCHAIN=local` and an older Go,
+the install fails with an error like
+`go.mod requires go >= 1.26.0 (running go 1.25.x; GOTOOLCHAIN=local)`; upgrade
+Go or unset `GOTOOLCHAIN=local` to fix it.
 
 ## Installation
 
