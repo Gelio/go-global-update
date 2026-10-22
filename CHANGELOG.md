@@ -2,19 +2,30 @@
 
 ## Unreleased
 
-### Changed
+### ⚠ Breaking Changes
 
-- Require Go 1.19 or higher and update dependencies
-  <https://github.com/Gelio/go-global-update/pull/32>
+- Require Go 1.26 or higher
+
+### Internal
+
+- Update dependencies <https://github.com/Gelio/go-global-update/pull/32>
 
   Thanks to [@reneleonhardt](https://github.com/reneleonhardt) for the
   contribution.
 
-### Internal
+- Replace `zap` with `log/slog` and `tint` for logging
+
+  The `--debug` log lines have a new format.
+
+- Derive the `--version` output from the build info instead of a hardcoded
+  string
 
 - Test only on the two supported Go releases (`oldstable` and `stable`) in CI,
   pin GitHub Actions to commit SHAs, and let Dependabot update dependencies
   <https://github.com/Gelio/go-global-update/pull/32>
+
+- Run tests with `-race`, scan for vulnerabilities with `govulncheck`, and lint
+  with `golangci-lint` v2 instead of checking formatting with `gofumpt`
 
 ## v0.2.5 (2024-09-13)
 

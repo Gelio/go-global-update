@@ -3,22 +3,21 @@ package main
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
+	"runtime/debug"
 
 	"github.com/Gelio/go-global-update/internal/colors"
 	"github.com/Gelio/go-global-update/internal/gobinaries"
 	"github.com/Gelio/go-global-update/internal/gocli"
 	"github.com/Gelio/go-global-update/internal/updater"
-	"github.com/fatih/color"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 
+	"github.com/lmittmann/tint"
+	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	loggerConfig := zap.NewDevelopmentConfig()
-
 	// NOTE: re-define the version flag to use `V` instead of `v` as the alias
 	// `-v` belongs to the `--verbose` flag
 	cli.VersionFlag = &cli.BoolFlag{
@@ -38,7 +37,7 @@ go-global-update gofumpt gopls shfmt
 go-global-update --dry-run`,
 		Description: `By default it will update all upgradable binaries in GOBIN.
 If arguments are provided, only those binaries will be updated.`,
-		Version:                "v0.2.5",
+		Version:                versionFromBuildInfo(debug.ReadBuildInfo()),
 		ArgsUsage:              "[binaries to update...]",
 		UseShortOptionHandling: true,
 		Flags: []cli.Flag{
@@ -70,11 +69,7 @@ If arguments are provided, only those binaries will be updated.`,
 			forceColors := c.Bool("colors")
 			colorsDecoratorFactory := colors.NewFactory(forceColors)
 
-			logger, err := loggerConfig.Build()
-			if err != nil {
-				return fmt.Errorf("cannot initialize zap logger: %w", err)
-			}
-			defer logger.Sync()
+			logger := newLogger(c.Bool("debug"), forceColors)
 
 			cmdRunner := gocli.NewCmdRunner(logger)
 
@@ -89,7 +84,7 @@ If arguments are provided, only those binaries will be updated.`,
 				return fmt.Errorf("--dry-run and --force options cannot be used together")
 			}
 
-			err = updater.UpdateBinaries(
+			err := updater.UpdateBinaries(
 				logger,
 				options,
 				os.Stdout,
@@ -100,14 +95,6 @@ If arguments are provided, only those binaries will be updated.`,
 			)
 			return err
 		},
-		Before: func(c *cli.Context) error {
-			debugMode := c.Bool("debug")
-			updateLoggerLevel(&loggerConfig, debugMode)
-			forceColors := c.Bool("colors")
-			updateLoggerColors(&loggerConfig, forceColors)
-
-			return nil
-		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -115,17 +102,41 @@ If arguments are provided, only those binaries will be updated.`,
 	}
 }
 
-func updateLoggerLevel(loggerConfig *zap.Config, debugMode bool) {
-	logLevel := zap.InfoLevel
-	if debugMode {
-		logLevel = zap.DebugLevel
+// versionFromBuildInfo returns the main module version embedded by the Go
+// toolchain. `go build` and `go install` from a VCS checkout stamp a
+// pseudo-version (e.g. `v0.2.6-0.2026...-1e0b361c34ba`, with `+dirty` if the
+// tree is modified). "(devel)" is reported for `go run`, `-buildvcs=false`, or
+// builds without VCS info.
+func versionFromBuildInfo(info *debug.BuildInfo, ok bool) string {
+	if !ok || info.Main.Version == "" {
+		return "(devel)"
 	}
 
-	loggerConfig.Level.SetLevel(logLevel)
+	return info.Main.Version
 }
 
-func updateLoggerColors(loggerConfig *zap.Config, forceColors bool) {
-	if forceColors || !color.NoColor {
-		loggerConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+func newLogger(verbose, forceColors bool) *slog.Logger {
+	lvl := slog.LevelInfo
+	if verbose {
+		lvl = slog.LevelDebug
 	}
+
+	stderrIsTerminal := isatty.IsTerminal(os.Stderr.Fd()) || isatty.IsCygwinTerminal(os.Stderr.Fd())
+
+	return slog.New(tint.NewTextHandler(os.Stderr, &tint.Options{
+		Level:   lvl,
+		NoColor: !logColorsEnabled(forceColors, stderrIsTerminal, os.Getenv),
+	}))
+}
+
+// logColorsEnabled decides whether log lines are colored, following the same
+// rules github.com/fatih/color applies to the summary table: `--colors` forces
+// colors, otherwise they are used only on a terminal when NO_COLOR is unset or
+// empty (https://no-color.org/) and TERM is not "dumb".
+func logColorsEnabled(forceColors, stderrIsTerminal bool, getenv func(string) string) bool {
+	if forceColors {
+		return true
+	}
+
+	return stderrIsTerminal && getenv("NO_COLOR") == "" && getenv("TERM") != "dumb"
 }

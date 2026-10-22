@@ -1,6 +1,6 @@
 package gobinaries
 
-import "io/ioutil"
+import "os"
 
 type DirectoryLister interface {
 	ListDirectoryEntries(path string) ([]string, error)
@@ -8,15 +8,15 @@ type DirectoryLister interface {
 
 type FilesystemDirectoryLister struct{}
 
-func (_ *FilesystemDirectoryLister) ListDirectoryEntries(path string) ([]string, error) {
-	fileinfos, err := ioutil.ReadDir(path)
+func (*FilesystemDirectoryLister) ListDirectoryEntries(path string) ([]string, error) {
+	entries, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
 
 	var names []string
-	for _, fileinfo := range fileinfos {
-		names = append(names, fileinfo.Name())
+	for _, entry := range entries {
+		names = append(names, entry.Name())
 	}
 
 	return names, nil

@@ -50,7 +50,7 @@ var commonUpdateProblems []CommonUpdateProblem = []CommonUpdateProblem{
 		name:                       "E003",
 		troubleshootingHeadingHash: "#e003---module-declares-its-path-as--but-was-required-as-",
 		occurs: func(goInstallOutput string) bool {
-			r := regexp.MustCompile("(?s)module declares its path as: .*\\n\\s+but was required as: .*")
+			r := regexp.MustCompile(`(?s)module declares its path as: .*\n\s+but was required as: .*`)
 			return r.MatchString(goInstallOutput)
 		},
 	},

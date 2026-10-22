@@ -3,6 +3,7 @@ package updater
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -12,12 +13,11 @@ import (
 	"github.com/Gelio/go-global-update/internal/gobinariestest"
 	"github.com/Gelio/go-global-update/internal/goclitest"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 )
 
 type mockFilesystemUtils struct{}
 
-func (_ mockFilesystemUtils) Chdir(_ string) error {
+func (mockFilesystemUtils) Chdir(_ string) error {
 	return nil
 }
 
@@ -42,7 +42,7 @@ func TestUpdateAllFoundBinaries(t *testing.T) {
 	shfmtMockBinary := gobinariestest.GetShfmtMockBinary()
 	shfmtMockBinary.Binary.LatestVersion = "v3.4.3"
 
-	logger := zap.NewNop()
+	logger := slog.New(slog.DiscardHandler)
 	options := Options{}
 	var output bytes.Buffer
 	lister := gobinariestest.TestSuccessDirectoryLister{
@@ -112,7 +112,7 @@ installed-from-source: go1.17
 `,
 	}
 
-	logger := zap.NewNop()
+	logger := slog.New(slog.DiscardHandler)
 	options := Options{}
 	var output bytes.Buffer
 	lister := gobinariestest.TestSuccessDirectoryLister{
@@ -163,7 +163,7 @@ func TestForceReinstallingBinaries(t *testing.T) {
 	shfmtMockBinary := gobinariestest.GetShfmtMockBinary()
 	shfmtMockBinary.Binary.LatestVersion = "v3.4.3"
 
-	logger := zap.NewNop()
+	logger := slog.New(slog.DiscardHandler)
 	options := Options{
 		ForceReinstall: true,
 	}
@@ -208,7 +208,7 @@ func TestPreserveBuildTags(t *testing.T) {
 	shfmtMockBinary.ModuleInfo = fmt.Sprintf(`%s
   build  -tags=a,b,c`, shfmtMockBinary.ModuleInfo)
 
-	logger := zap.NewNop()
+	logger := slog.New(slog.DiscardHandler)
 	options := Options{
 		ForceReinstall: true,
 	}

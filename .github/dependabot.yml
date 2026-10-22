@@ -14,7 +14,9 @@ updates:
           - minor
           - patch
   - package-ecosystem: gomod
-    directory: /
+    directories:
+      - /
+      - /tools
     schedule:
       interval: weekly
     cooldown:
