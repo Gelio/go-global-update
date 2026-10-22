@@ -167,7 +167,6 @@ func TestIntegration(t *testing.T) {
 	ensureIntegrationTestsDirExists(t)
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.name, func(t *testing.T) {
 			gobin := prepareTempGobin(t)
 
@@ -283,7 +282,6 @@ func TestDetectCommonProblems(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.name, func(t *testing.T) {
 			gobin := prepareTempGobin(t)
 			defer os.RemoveAll(gobin)

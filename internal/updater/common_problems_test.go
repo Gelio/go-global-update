@@ -65,7 +65,6 @@ go install: command-line-arguments@latest: malformed module path "command-line-a
 	}
 
 	for _, c := range cases {
-		c := c
 		t.Run(c.name, func(t *testing.T) {
 			problemsFound := FindCommonUpdateProblems(c.goInstallOutput)
 			var problemNames []string
