@@ -129,7 +129,7 @@ func findModuleURLInModuleOutput(output string) *parsedGoModuleInfo {
 }
 
 func findBuildTagsInModuleOutput(output string) []string {
-	r := regexp.MustCompile((`^\s+build\s+-tags=(([^,]+)(,[^,]+)*)$`))
+	r := regexp.MustCompile(`^\s+build\s+-tags=(([^,]+)(,[^,]+)*)$`)
 
 	var buildTags []string
 
