@@ -2,6 +2,7 @@ package gobinaries_test
 
 import (
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"testing"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/Gelio/go-global-update/internal/gobinariestest"
 	"github.com/Gelio/go-global-update/internal/goclitest"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 )
 
 func TestExtractValidModuleURL(t *testing.T) {
@@ -26,7 +26,7 @@ func TestExtractValidModuleURL(t *testing.T) {
 				},
 			}
 
-			introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobinariestest.GOBIN, zap.NewNop())
+			introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobinariestest.GOBIN, slog.New(slog.DiscardHandler))
 
 			binary, err := introspecter.Introspect(mockBinary.Binary.Name)
 			assert.Nil(t, err)
@@ -44,7 +44,7 @@ shfmt: go1.17
 `),
 		},
 	}
-	introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobin, zap.NewNop())
+	introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobin, slog.New(slog.DiscardHandler))
 
 	_, err := introspecter.Introspect("shfmt")
 	assert.NotNil(t, err)
@@ -61,7 +61,7 @@ func TestExtractLatestVersion(t *testing.T) {
 		},
 	}
 
-	introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobinariestest.GOBIN, zap.NewNop())
+	introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobinariestest.GOBIN, slog.New(slog.DiscardHandler))
 	binary, err := introspecter.Introspect(mockBinary.Binary.Name)
 	assert.Nil(t, err)
 	assert.Equal(t, mockBinary.Binary, binary)
@@ -110,7 +110,7 @@ go-global-update: go1.17
 		},
 	}
 
-	introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobinariestest.GOBIN, zap.NewNop())
+	introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobinariestest.GOBIN, slog.New(slog.DiscardHandler))
 	binary, err := introspecter.Introspect(mockBinary.Binary.Name)
 	assert.Nil(t, err)
 	assert.Equal(t, mockBinary.Binary, binary)
@@ -159,7 +159,7 @@ go-global-update: go1.18
 		},
 	}
 
-	introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobinariestest.GOBIN, zap.NewNop())
+	introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobinariestest.GOBIN, slog.New(slog.DiscardHandler))
 	binary, err := introspecter.Introspect(mockBinary.Binary.Name)
 	assert.Nil(t, err)
 	assert.Equal(t, mockBinary.Binary, binary)
@@ -234,7 +234,7 @@ go-global-update: go1.23.1
 				},
 			}
 
-			introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobinariestest.GOBIN, zap.NewNop())
+			introspecter := gobinaries.NewIntrospecter(&cmdRunner, gobinariestest.GOBIN, slog.New(slog.DiscardHandler))
 
 			binary, err := introspecter.Introspect(mockBinary.Binary.Name)
 			assert.Nil(t, err)

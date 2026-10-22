@@ -3,22 +3,20 @@ package main
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 
 	"github.com/Gelio/go-global-update/internal/colors"
 	"github.com/Gelio/go-global-update/internal/gobinaries"
 	"github.com/Gelio/go-global-update/internal/gocli"
 	"github.com/Gelio/go-global-update/internal/updater"
-	"github.com/fatih/color"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 
+	"github.com/lmittmann/tint"
+	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	loggerConfig := zap.NewDevelopmentConfig()
-
 	// NOTE: re-define the version flag to use `V` instead of `v` as the alias
 	// `-v` belongs to the `--verbose` flag
 	cli.VersionFlag = &cli.BoolFlag{
@@ -70,11 +68,7 @@ If arguments are provided, only those binaries will be updated.`,
 			forceColors := c.Bool("colors")
 			colorsDecoratorFactory := colors.NewFactory(forceColors)
 
-			logger, err := loggerConfig.Build()
-			if err != nil {
-				return fmt.Errorf("cannot initialize zap logger: %w", err)
-			}
-			defer logger.Sync()
+			logger := newLogger(c.Bool("debug"), forceColors)
 
 			cmdRunner := gocli.NewCmdRunner(logger)
 
@@ -89,7 +83,7 @@ If arguments are provided, only those binaries will be updated.`,
 				return fmt.Errorf("--dry-run and --force options cannot be used together")
 			}
 
-			err = updater.UpdateBinaries(
+			err := updater.UpdateBinaries(
 				logger,
 				options,
 				os.Stdout,
@@ -100,14 +94,6 @@ If arguments are provided, only those binaries will be updated.`,
 			)
 			return err
 		},
-		Before: func(c *cli.Context) error {
-			debugMode := c.Bool("debug")
-			updateLoggerLevel(&loggerConfig, debugMode)
-			forceColors := c.Bool("colors")
-			updateLoggerColors(&loggerConfig, forceColors)
-
-			return nil
-		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -115,17 +101,28 @@ If arguments are provided, only those binaries will be updated.`,
 	}
 }
 
-func updateLoggerLevel(loggerConfig *zap.Config, debugMode bool) {
-	logLevel := zap.InfoLevel
-	if debugMode {
-		logLevel = zap.DebugLevel
+func newLogger(verbose, forceColors bool) *slog.Logger {
+	lvl := slog.LevelInfo
+	if verbose {
+		lvl = slog.LevelDebug
 	}
 
-	loggerConfig.Level.SetLevel(logLevel)
+	stderrIsTerminal := isatty.IsTerminal(os.Stderr.Fd()) || isatty.IsCygwinTerminal(os.Stderr.Fd())
+
+	return slog.New(tint.NewTextHandler(os.Stderr, &tint.Options{
+		Level:   lvl,
+		NoColor: !logColorsEnabled(forceColors, stderrIsTerminal, os.Getenv),
+	}))
 }
 
-func updateLoggerColors(loggerConfig *zap.Config, forceColors bool) {
-	if forceColors || !color.NoColor {
-		loggerConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+// logColorsEnabled decides whether log lines are colored, following the same
+// rules github.com/fatih/color applies to the summary table: `--colors` forces
+// colors, otherwise they are used only on a terminal when NO_COLOR is unset or
+// empty (https://no-color.org/) and TERM is not "dumb".
+func logColorsEnabled(forceColors, stderrIsTerminal bool, getenv func(string) string) bool {
+	if forceColors {
+		return true
 	}
+
+	return stderrIsTerminal && getenv("NO_COLOR") == "" && getenv("TERM") != "dumb"
 }

@@ -2,21 +2,21 @@ package gobinaries
 
 import (
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/Gelio/go-global-update/internal/gocli"
-	"go.uber.org/zap"
 )
 
 type Introspecter struct {
 	cmdRunner gocli.GoCmdRunner
 	gobin     string
-	logger    *zap.Logger
+	logger    *slog.Logger
 }
 
-func NewIntrospecter(cmdRunner gocli.GoCmdRunner, gobin string, logger *zap.Logger) Introspecter {
+func NewIntrospecter(cmdRunner gocli.GoCmdRunner, gobin string, logger *slog.Logger) Introspecter {
 	return Introspecter{
 		cmdRunner,
 		gobin,
@@ -51,7 +51,7 @@ func (i *Introspecter) Introspect(binaryName string) (GoBinary, error) {
 		LatestVersion: latestVersion,
 		BuildTags:     moduleInfo.buildTags,
 	}
-	i.logger.Sugar().Debugf("introspected binary %s: %+v", binaryName, goBinary)
+	i.logger.Debug("introspected binary", "name", binaryName, "binary", goBinary)
 
 	return goBinary, nil
 }
@@ -74,9 +74,9 @@ func (i *Introspecter) getModuleInfo(binaryPath string) (*parsedGoModuleInfo, er
 	}
 	goModuleInfo.buildTags = findBuildTagsInModuleOutput(moduleOutput)
 	if len(goModuleInfo.buildTags) > 0 {
-		i.logger.Sugar().Debugf("found build tags for binary %s: %v", binaryPath, goModuleInfo.buildTags)
+		i.logger.Debug("found build tags", "path", binaryPath, "tags", goModuleInfo.buildTags)
 	} else {
-		i.logger.Sugar().Debugf("no build tags found for binary %s", binaryPath)
+		i.logger.Debug("no build tags found", "path", binaryPath)
 	}
 
 	return goModuleInfo, nil

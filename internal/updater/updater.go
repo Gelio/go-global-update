@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"path/filepath"
 	"strings"
 	"text/tabwriter"
@@ -12,7 +13,6 @@ import (
 	"github.com/Gelio/go-global-update/internal/gobinaries"
 	"github.com/Gelio/go-global-update/internal/gocli"
 	"github.com/fatih/color"
-	"go.uber.org/zap"
 )
 
 type Options struct {
@@ -30,7 +30,7 @@ type Options struct {
 // If binariesToUpdate is empty, the command will attempt to update all
 // found binaries in GOBIN.
 func UpdateBinaries(
-	logger *zap.Logger,
+	logger *slog.Logger,
 	options Options,
 	out io.Writer,
 	colorsFactory *colors.DecoratorFactory,
@@ -44,7 +44,7 @@ func UpdateBinaries(
 		return fmt.Errorf("could not determine GOBIN path: %w", err)
 	}
 
-	logger.Debug("found GOBIN path", zap.String("GOBIN", gobin))
+	logger.Debug("found GOBIN path", "GOBIN", gobin)
 
 	if err := fs.Chdir(gobin); err != nil {
 		return fmt.Errorf("could not change directory to GOBIN (%s): %w", gobin, err)
