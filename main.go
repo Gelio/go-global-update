@@ -30,13 +30,14 @@ func main() {
 	app := &cli.App{
 		Name:  "go-global-update",
 		Usage: "Update globally installed go binaries.",
-		Description: `By default it will update all upgradable binaries in GOBIN.
-If arguments are provided, only those binaries will be updated.
+		UsageText: `go-global-update [global options] [binaries to update...]
 
 Examples:
 
-* go-global-update gofumpt gopls shfmt
-* go-global-update --dry-run`,
+go-global-update gofumpt gopls shfmt
+go-global-update --dry-run`,
+		Description: `By default it will update all upgradable binaries in GOBIN.
+If arguments are provided, only those binaries will be updated.`,
 		Version:                "v0.2.5",
 		ArgsUsage:              "[binaries to update...]",
 		UseShortOptionHandling: true,
