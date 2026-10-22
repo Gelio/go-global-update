@@ -24,7 +24,7 @@ The missing go command similar to `npm -g update` or
 
 ## Requirements
 
-- Go 1.16 or higher
+- Go 1.19 or higher
 
 ## Installation
 

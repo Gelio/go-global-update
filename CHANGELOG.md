@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Changed
+
+- Require Go 1.19 or higher and update dependencies
+  <https://github.com/Gelio/go-global-update/pull/32>
+
+  Thanks to [@reneleonhardt](https://github.com/reneleonhardt) for the
+  contribution.
+
+### Internal
+
+- Test only on the two supported Go releases (`oldstable` and `stable`) in CI,
+  pin GitHub Actions to commit SHAs, and let Dependabot update dependencies
+  <https://github.com/Gelio/go-global-update/pull/32>
+
 ## v0.2.5 (2024-09-13)
 
 ### Added
