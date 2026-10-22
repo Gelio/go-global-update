@@ -5,6 +5,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"runtime/debug"
 
 	"github.com/Gelio/go-global-update/internal/colors"
 	"github.com/Gelio/go-global-update/internal/gobinaries"
@@ -36,7 +37,7 @@ go-global-update gofumpt gopls shfmt
 go-global-update --dry-run`,
 		Description: `By default it will update all upgradable binaries in GOBIN.
 If arguments are provided, only those binaries will be updated.`,
-		Version:                "v0.2.5",
+		Version:                versionFromBuildInfo(debug.ReadBuildInfo()),
 		ArgsUsage:              "[binaries to update...]",
 		UseShortOptionHandling: true,
 		Flags: []cli.Flag{
@@ -99,6 +100,19 @@ If arguments are provided, only those binaries will be updated.`,
 	if err := app.Run(os.Args); err != nil {
 		log.Fatalf("could not run command: %v", err)
 	}
+}
+
+// versionFromBuildInfo returns the main module version embedded by the Go
+// toolchain. `go build` and `go install` from a VCS checkout stamp a
+// pseudo-version (e.g. `v0.2.6-0.2026...-1e0b361c34ba`, with `+dirty` if the
+// tree is modified). "(devel)" is reported for `go run`, `-buildvcs=false`, or
+// builds without VCS info.
+func versionFromBuildInfo(info *debug.BuildInfo, ok bool) string {
+	if !ok || info.Main.Version == "" {
+		return "(devel)"
+	}
+
+	return info.Main.Version
 }
 
 func newLogger(verbose, forceColors bool) *slog.Logger {

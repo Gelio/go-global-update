@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
@@ -248,6 +249,46 @@ func TestInstalledFromSource(t *testing.T) {
 	version, err := newTestCommand(t, gobin, "go", "version", "-m", filepath.Join(gobin, builtBinaryName)).Output()
 	assert.Nil(t, err, "could not get version of", builtBinaryName)
 	assert.Contains(t, string(version), "(devel)", "Binary was upgraded but binaries built from source should be skipped")
+}
+
+// TestVersionFlagFromBuildInfo checks that `--version` prints the main module
+// version that the Go toolchain stamps into the built binary.
+func TestVersionFlagFromBuildInfo(t *testing.T) {
+	ensureIntegrationTestsDirExists(t)
+
+	gobin := prepareTempGobin(t)
+	defer os.RemoveAll(gobin)
+
+	repositoryDir, err := filepath.Abs("..")
+	require.Nil(t, err, "could not get the absolute filepath of the repository")
+
+	// NOTE: a build without VCS metadata (e.g. from a source archive)
+	// legitimately reports `(devel)`, so only require a stamped version when
+	// the repository is a git checkout. There, `-buildvcs=true` overrides a
+	// `-buildvcs=false` in the contributor's GOFLAGS.
+	isGitCheckout := exec.Command("git", "-C", repositoryDir, "rev-parse", "--git-dir").Run() == nil
+	buildArgs := []string{"build"}
+	if isGitCheckout {
+		buildArgs = append(buildArgs, "-buildvcs=true")
+	}
+
+	builtBinaryName := binaryName("go-global-update")
+	builtBinaryPath := filepath.Join(gobin, builtBinaryName)
+	output, err := newTestCommand(t, gobin, "go", append(buildArgs, "-o", builtBinaryPath, repositoryDir)...).CombinedOutput()
+	require.Nilf(t, err, "could not build %s\noutput: %s", repositoryDir, string(output))
+
+	buildInfo, err := getVersion(t, gobin, builtBinaryName)
+	require.Nilf(t, err, "could not get version of %s\noutput: %s", builtBinaryName, buildInfo)
+	match := regexp.MustCompile(`(?m)^\s+mod\s+github\.com/Gelio/go-global-update\s+(\S+)`).FindStringSubmatch(buildInfo)
+	require.NotNilf(t, match, "main module version not found in build info\noutput: %s", buildInfo)
+	mainModuleVersion := match[1]
+	if isGitCheckout {
+		require.NotEqual(t, "(devel)", mainModuleVersion, "expected a VCS-stamped version in a git checkout")
+	}
+
+	output, err = exec.Command(builtBinaryPath, "--version").CombinedOutput()
+	require.Nilf(t, err, "could not run %s --version\noutput: %s", builtBinaryName, string(output))
+	assert.Contains(t, string(output), mainModuleVersion)
 }
 
 // TestDetectCommonProblems checks that common problems are detected and

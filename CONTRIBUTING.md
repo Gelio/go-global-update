@@ -24,3 +24,9 @@ during the pull request review.
 To run `npm` commands you will need [Node](https://nodejs.org/en/) installed,
 which comes bundled with `npm`. Run `npm install` to install the necessary
 dependencies before running those `npm run ...` commands.
+
+## Releasing
+
+The version reported by `--version` comes from the Go build info, so there is no
+version string to edit in the code. To release, tag the commit as `vX.Y.Z` and
+add the matching entry to [CHANGELOG.md](CHANGELOG.md).
