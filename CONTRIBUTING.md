@@ -28,6 +28,27 @@ To run `npm` commands you will need [Node](https://nodejs.org/en/) installed,
 which comes bundled with `npm`. Run `npm install` to install the necessary
 dependencies before running those `npm run ...` commands.
 
+## Changelog
+
+[CHANGELOG.md](CHANGELOG.md) is for users. Add new entries under
+`## Unreleased`, using these sections:
+
+- `### ⚠ Breaking Changes` (only when needed)
+- `### Features`
+- `### Bug Fixes`
+- `### Internal`
+
+Only changes in behavior users can observe go under Breaking Changes, Features,
+or Bug Fixes. Anything users cannot see (refactors, dependency updates, CI,
+build and release plumbing, how `--version` is derived) goes under Internal.
+
+The sections match [Conventional Commits](https://www.conventionalcommits.org/)
+types: `feat` goes under Features, `fix` under Bug Fixes, `!` or
+`BREAKING CHANGE` under Breaking Changes, and every other type under Internal.
+Pick the commit type by its user-visible effect.
+
+Entries for v0.2.5 and earlier use the previous section headings.
+
 ## Releasing
 
 The version reported by `--version` comes from the Go build info, so there is no
