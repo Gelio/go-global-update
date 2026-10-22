@@ -8,6 +8,13 @@ updates:
       default-days: 7
       semver-minor-days: 14
       semver-major-days: 28
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
   - package-ecosystem: gomod
     directory: /
     schedule:
@@ -16,6 +23,13 @@ updates:
       default-days: 7
       semver-minor-days: 14
       semver-major-days: 28
+    groups:
+      go:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -24,3 +38,10 @@ updates:
       default-days: 7
       semver-minor-days: 14
       semver-major-days: 28
+    groups:
+      npm:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
