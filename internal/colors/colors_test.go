@@ -25,7 +25,7 @@ func TestForceEnableColors(t *testing.T) {
 func TestColorsWhenNoColorIsDisabled(t *testing.T) {
 	require.True(t, color.NoColor, "NoColor should be enabled by default")
 	color.NoColor = false
-	defer (func() { color.NoColor = true })()
+	defer func() { color.NoColor = true }()
 
 	c := NewFactory(false)
 	output := c.NewDecorator(color.BgBlack)("test")

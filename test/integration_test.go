@@ -231,7 +231,10 @@ func TestInstalledFromSource(t *testing.T) {
 	repositoryDir, err := filepath.Abs("..")
 	require.Nil(t, err, "could not get the absolute filepath of the repository")
 
-	installCommand := newTestCommand(t, gobin, "go", "install")
+	// NOTE: since Go 1.24, `go install` in a git checkout stamps the binary
+	// with a VCS-derived version instead of "(devel)". Disable VCS stamping
+	// to keep testing the "(devel)" case.
+	installCommand := newTestCommand(t, gobin, "go", "install", "-buildvcs=false")
 	installCommand.Dir = repositoryDir
 
 	err = installCommand.Run()

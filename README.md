@@ -24,7 +24,7 @@ The missing go command similar to `npm -g update` or
 
 ## Requirements
 
-- Go 1.16 or higher
+- Go 1.19 or higher
 
 ## Installation
 
@@ -97,13 +97,11 @@ globally-installed go binaries. The alternatives are:
 - [gup](https://github.com/nao1215/gup)
 
   Advantages:
-
   - includes desktop notifications
   - has a subcommand to remove a binary
   - has a way to export/import a list of binaries
 
   Disadvantages:
-
   - does not offer troubleshooting information when an upgrade fails
   - does not report error logs from failed updates
   - updates binaries installed from source (potentially overwrites locally-made
@@ -112,7 +110,6 @@ globally-installed go binaries. The alternatives are:
 - [binstale](https://github.com/shurcooL/binstale)
 
   Disadvantages:
-
   - seems not to detect globally-installed binaries using go modules
 
     ```sh
